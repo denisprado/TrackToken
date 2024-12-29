@@ -5,7 +5,6 @@ const STORAGE_KEY = "token_data";
 interface TokenAddition {
   amount: string;
   timestamp: number;
-  price: number | null;
 }
 
 interface Token {
@@ -30,7 +29,6 @@ export const saveToken = async (
     const newTokenAddition = {
       amount: token.amount,
       timestamp: Date.now(),
-      price: token.price !== undefined ? token.price : null,
     };
 
     if (existingTokenIndex !== -1) {
@@ -47,7 +45,20 @@ export const saveToken = async (
       });
     }
 
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(existingTokens));
+    const updatedTokens = existingTokens
+      .map((token) => ({
+        ...token,
+        additions: token.additions || [],
+      }))
+      .filter((token) => {
+        let totalAmount = 0;
+        token.additions.forEach((addition) => {
+          totalAmount += parseFloat(addition.amount);
+        });
+        return totalAmount > 0;
+      });
+
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTokens));
   } catch (error) {
     console.error("Erro ao salvar token", error);
     throw error;

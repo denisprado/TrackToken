@@ -9,7 +9,6 @@ import { fetchTokenPrice } from '../utils/api';
 interface TokenAddition {
 	amount: string;
 	timestamp: number;
-	price: number | null;
 }
 
 interface Token {
@@ -38,10 +37,11 @@ const TokenDetailsScreen = () => {
 					const tokenWithPrice = await Promise.all(
 						tokenDetails.additions.map(async (addition) => {
 							const currentPrice = await fetchTokenPrice(tokenDetails.id);
-							const percentageChange = currentPrice ? (((currentPrice - (addition.price || currentPrice)) / (addition.price || currentPrice)) * 100) : null
+							const percentageChange = currentPrice ? (((currentPrice - (addition.amount > "0" ? currentPrice : 0)) / (addition.amount > "0" ? currentPrice : 0)) * 100) : null
 							return {
 								...addition,
-								percentageChange
+								percentageChange,
+								currentPrice
 							};
 						})
 					);
@@ -53,7 +53,6 @@ const TokenDetailsScreen = () => {
 				else {
 					setToken(null);
 				}
-
 			}
 		}
 		catch (error) {

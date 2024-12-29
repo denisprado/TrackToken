@@ -30,7 +30,6 @@ interface Coin {
 interface TokenAddition {
 	amount: string;
 	timestamp: number;
-	price: number | null;
 }
 
 interface Token {
@@ -120,6 +119,17 @@ const SwapTokenScreen = () => {
 			return;
 		}
 
+		const parsedFromAmount = parseFloat(fromAmount.replace(',', '.'));
+		if (isNaN(parsedFromAmount)) {
+			Alert.alert('Error', 'Invalid amount');
+			return;
+		}
+
+		const tokenToSwap = tokens.find(token => token.id === fromToken.id);
+		if (tokenToSwap && parsedFromAmount > (totalAmount || 0)) {
+			Alert.alert('Error', `You cannot swap more than your current balance of ${totalAmount || 0}.`)
+			return;
+		}
 
 		Alert.alert(
 			'Swap Tokens',
@@ -134,7 +144,6 @@ const SwapTokenScreen = () => {
 					onPress: async () => {
 						setIsCalculating(true);
 						try {
-							const parsedFromAmount = parseFloat(fromAmount.replace(',', '.'));
 							const parsedToAmount = parseFloat(toAmount);
 							const toPrice = await fetchTokenPrice(toToken.id);
 
@@ -142,8 +151,7 @@ const SwapTokenScreen = () => {
 							await saveToken({
 								id: fromToken.id,
 								name: fromToken.name,
-								amount: String(-parsedFromAmount),
-								price: null
+								amount: String(-parsedFromAmount)
 							});
 							// Add to toToken
 							await saveToken({

@@ -11,7 +11,6 @@ import { Feather } from '@expo/vector-icons';
 interface TokenAddition {
 	amount: string;
 	timestamp: number;
-	price: number | null;
 }
 
 interface Token {
@@ -35,14 +34,21 @@ const TokensScreen = () => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
 	const [redeemAmount, setRedeemAmount] = useState('');
-	const debounceTimer = useRef<any>(null);
+	const updateInterval = useRef<any>(null);
+
 
 	useFocusEffect(
 		React.useCallback(() => {
 			loadInitialTokens();
+			updateInterval.current = setInterval(loadInitialTokens, 60000); // Update every 1 minute
+
+			return () => {
+				if (updateInterval.current) {
+					clearInterval(updateInterval.current);
+				}
+			};
 		}, [])
 	);
-
 	const calculateTotalAmount = (additions: TokenAddition[]) => {
 		return additions.reduce((sum, addition) => sum + parseFloat(addition.amount), 0);
 	};
@@ -52,7 +58,7 @@ const TokensScreen = () => {
 		let totalInvestment = 0;
 		let totalAmount = 0;
 		additions.forEach((addition) => {
-			totalInvestment += (addition.price || currentPrice) * parseFloat(addition.amount);
+			totalInvestment += currentPrice * parseFloat(addition.amount);
 			totalAmount += parseFloat(addition.amount);
 		})
 		const currentTotalValue = totalAmount * currentPrice;
@@ -273,6 +279,11 @@ const styles = StyleSheet.create({
 		padding: 10,
 		borderRadius: 5,
 	},
+	buttonContainer: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		marginTop: 10
+	}
 });
 
 export default TokensScreen;
