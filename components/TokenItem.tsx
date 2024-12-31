@@ -3,95 +3,149 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { theme } from '../utils/theme';
 
+// Definição de tipos para as propriedades do componente
 interface TokenItemProps {
 	name: string;
 	totalAmount: number;
-	currentValue: number | null;
+	currency1Value: number | null;
 	onRedeem: () => void;
-	onSwap: () => void;
+	currency1PercentageChange: number | null;
+	selectedCurrency1: string;
+	selectedCurrency2: string;
+	currency2Value: number | null;
+	currency2PercentageChange: number | null;
 	onPress: () => void;
-	percentageChange: number | null;
 }
 
-const TokenItem: React.FC<TokenItemProps> = ({ name, totalAmount, currentValue, onRedeem, onSwap, onPress, percentageChange }) => {
-	const symbol = name.split('(')[1]?.split(')')[0] || '';
+// Componente funcional TokenItem
+const TokenItem: React.FC<TokenItemProps> = ({
+	name,
+	totalAmount,
+	currency1Value,
+	currency1PercentageChange,
+	selectedCurrency1,
+	selectedCurrency2,
+	currency2Value,
+	currency2PercentageChange,
+	onPress,
+}) => {
+	// Função para formatar o nome do token
+	const formatTokenName = (name: string) => {
+		const symbol = name.includes('(') ? name.split('(')[1]?.split(')')[0] : '';
+		const tokenName = name.includes('(') ? name.split('(')[0] : name;
+		return { tokenName, symbol };
+	};
+
+	const { tokenName, symbol } = formatTokenName(name);
+
 	return (
 		<TouchableOpacity style={styles.itemContainer} onPress={onPress}>
-			<View style={styles.infoContainer}>
-				<Text style={styles.name}>{name.split('(')[0]}</Text>
+			<View style={styles.leftContainer}>
+				<Text style={styles.name}>{tokenName}</Text>
 				<Text style={styles.amount}>{symbol} {totalAmount.toFixed(6)}</Text>
 			</View>
-			<View style={styles.valueContainer}>
-				<Text style={styles.valueLabel}>$</Text>
-				<Text style={[styles.value, percentageChange !== null ? (percentageChange >= 0 ? styles.gain : styles.loss) : null]}>{currentValue !== null ? currentValue.toFixed(2) : 'Loading...'}</Text>
-				{percentageChange !== null && (
-					<Text style={[styles.percentageChange, percentageChange >= 0 ? styles.gain : styles.loss]}>
-						({percentageChange.toFixed(2)}%)
+			<View style={styles.centerContainer}>
+				<Text style={[styles.value, currency1PercentageChange !== null ? (currency1PercentageChange >= 0 ? styles.gain : styles.loss) : null]}>
+					{currency1Value !== null ? currency1Value.toFixed(2) : 'Loading...'}
+				</Text>
+				{currency1PercentageChange !== null && (
+					<Text style={[styles.currency1PercentageChange, currency1PercentageChange >= 0 ? styles.gain : styles.loss]}>
+						({currency1PercentageChange?.toFixed(2)}%)
 					</Text>
 				)}
+				<Text style={styles.currency}>{selectedCurrency1}</Text>
 			</View>
-			<TouchableOpacity style={styles.swapButton} onPress={onSwap}>
-				<Feather name="repeat" size={18} color={theme.secondaryText} />
-			</TouchableOpacity>
-			<View style={styles.redeemButton}>
-				<TouchableOpacity onPress={onRedeem}>
-					<Feather name="arrow-down-circle" size={18} color={theme.error} />
-				</TouchableOpacity>
+			<View style={styles.rightContainer}>
+				{currency2Value !== null && (
+					<View style={styles.currencyValueContainer}>
+						<Text style={[styles.value, currency2PercentageChange !== null ? (currency2PercentageChange >= 0 ? styles.gain : styles.loss) : null]}>
+							{currency2Value.toFixed(2)}
+						</Text>
+						{currency2PercentageChange !== null && (
+							<Text style={[styles.currency1PercentageChange, currency2PercentageChange >= 0 ? styles.gain : styles.loss]}>
+								({currency2PercentageChange?.toFixed(2)}%)
+							</Text>
+						)}
+					</View>
+				)}
+				<Text style={styles.currency}>{selectedCurrency2?.toUpperCase()}</Text>
+			</View>
+			<View style={styles.detailsButton}>
+				<Feather name="chevron-right" size={18} color={theme.secondaryText} />
 			</View>
 		</TouchableOpacity>
 	);
 };
 
+// Estilos
 const styles = StyleSheet.create({
 	itemContainer: {
 		paddingVertical: 8,
 		paddingLeft: 10,
 		borderBottomWidth: 1,
 		borderBottomColor: theme.border,
+
 		flexDirection: 'row',
-		justifyContent: 'space-between',
 		alignItems: 'center',
+		backgroundColor: theme.cardBackground,
 	},
-	infoContainer: {
-		flex: 1,
+	leftContainer: {
+		width: '30%',
+		paddingLeft: 5,
+	},
+	centerContainer: {
+		width: '28%',
+		paddingLeft: 5,
+
+		flexDirection: 'column',
+		alignItems: 'flex-end',
+	},
+	rightContainer: {
+		width: '28%',
+		alignItems: 'flex-end',
+		paddingLeft: 5,
+	},
+	currencyValueContainer: {
+		alignItems: 'flex-end',
 	},
 	name: {
-		fontSize: 16,
+		fontSize: 15,
 		color: theme.text,
+		textAlign: 'left',
+		fontWeight: 'bold',
 	},
 	amount: {
-		fontSize: 14,
-		color: theme.secondaryText
-	},
-	valueContainer: {
-		alignItems: 'flex-end',
-		flexDirection: 'row',
-	},
-	valueLabel: {
-		fontSize: 14,
+		fontSize: 12,
 		color: theme.secondaryText,
-		marginRight: 5
+		fontFamily: 'monospace',
 	},
 	value: {
-		fontSize: 14,
-		color: theme.text,
-	},
-	swapButton: {
-		padding: 5,
-	},
-	redeemButton: {
-		padding: 5,
-	},
-	percentageChange: {
 		fontSize: 12,
-		marginLeft: 5
+		color: theme.text,
+		fontFamily: 'monospace',
+	},
+	currency1PercentageChange: {
+		fontSize: 10,
+		marginLeft: 5,
+		fontFamily: 'monospace',
 	},
 	gain: {
-		color: '#69F0AE'
+		color: '#69F0AE',
 	},
 	loss: {
-		color: theme.error
-	}
+		color: theme.error,
+	},
+	currency: {
+		fontSize: 12,
+		color: theme.secondaryText,
+		fontFamily: 'monospace',
+	},
+	detailsButton: {
+		display: 'flex',
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingLeft: 15,
+	},
 });
 
 export default TokenItem;

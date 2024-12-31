@@ -11,11 +11,10 @@ import {
 	FlatList,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { saveToken } from '../utils/storage';
+import { loadCurrency, saveToken } from '../utils/storage';
 import axios from 'axios';
 import { Feather } from '@expo/vector-icons';
 import { theme } from '../utils/theme';
-
 
 interface Coin {
 	id: string;
@@ -57,7 +56,6 @@ interface CoinMarketData {
 	last_updated: string;
 }
 
-
 const AddTokenScreen = () => {
 	const navigation = useNavigation();
 	const [tokens, setTokens] = useState<Coin[]>([]);
@@ -94,24 +92,33 @@ const AddTokenScreen = () => {
 		}
 	}, [searchText, tokens])
 
+	const handleTokenAmountChange = (text: string) => {
+		const formattedText = text.replace(',', '.');
+		setTokenAmount(formattedText);
+	};
+
 	const handleAddToken = async () => {
 		if (!selectedToken || !tokenAmount) {
 			Alert.alert('Error', 'Please select a token and enter the amount.');
 			return;
 		}
 
+		const amount = parseFloat(tokenAmount.replace(',', '.'));
+		if (isNaN(amount)) {
+			Alert.alert('Error', 'Invalid amount.');
+			return;
+		}
+
+		const currency1 = await loadCurrency('1')
+		const currency2 = await loadCurrency('2')
+
 		try {
-			const amount = parseFloat(tokenAmount.replace(',', '.'));
-
-			if (isNaN(amount)) {
-				Alert.alert('Error', 'Invalid amount.');
-				return;
-			}
-
 			await saveToken({
 				id: selectedToken.id,
 				name: selectedToken.name,
-				amount: String(amount),
+				amount: amount.toString(),
+				selectedCurrency1: currency1!,
+				selectedCurrency2: currency2!
 			});
 			navigation.goBack();
 		} catch (error) {
@@ -132,13 +139,11 @@ const AddTokenScreen = () => {
 		setModalVisible(false);
 		setSearchText('');
 	};
-
 	const renderTokenItem = ({ item }: { item: Coin }) => (
 		<TouchableOpacity style={styles.tokenItem} onPress={() => handleSelectToken(item)}>
 			<Text style={styles.tokenItemText}>{item.name} ({item.symbol.toUpperCase()})</Text>
 		</TouchableOpacity>
 	);
-
 
 	return (
 		<View style={styles.container}>
@@ -162,7 +167,7 @@ const AddTokenScreen = () => {
 					style={[styles.input, { color: theme.text }]}
 					keyboardType="numeric"
 					value={tokenAmount}
-					onChangeText={(text) => setTokenAmount(text)}
+					onChangeText={handleTokenAmountChange}
 					placeholder="Enter amount"
 					placeholderTextColor={theme.secondaryText}
 					selectionColor={theme.secondaryText}

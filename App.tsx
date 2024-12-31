@@ -8,29 +8,32 @@ import { theme } from './utils/theme';
 import { RootStackParamList } from './types/navigation';
 import TokenDetailsScreen from './screens/TokenDetailsScreen';
 import SwapTokenScreen from './screens/SwapTokenScreen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = () => {
 	return (
-		<NavigationContainer >
-			<View style={styles.container}>
-				<Stack.Navigator initialRouteName="Tokens" screenOptions={{
-					headerStyle: {
-						backgroundColor: theme.background
-					},
-					headerTitleStyle: {
-						color: theme.text
-					},
-					headerTintColor: theme.text
-				}}>
-					<Stack.Screen name="Tokens" component={TokensScreen} options={{ headerShown: false }} />
-					<Stack.Screen name="AddToken" component={AddTokenScreen} />
-					<Stack.Screen name="TokenDetails" component={TokenDetailsScreen} />
-					<Stack.Screen name="SwapToken" component={SwapTokenScreen} />
-				</Stack.Navigator>
-			</View>
-		</NavigationContainer>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<NavigationContainer >
+				<View style={styles.container}>
+					<Stack.Navigator initialRouteName="Tokens" screenOptions={{
+						headerStyle: {
+							backgroundColor: theme.background
+						},
+						headerTitleStyle: {
+							color: theme.text,
+						},
+						headerTintColor: theme.text
+					}}>
+						<Stack.Screen name="Tokens" component={TokensScreen} options={{ headerShown: false }} />
+						<Stack.Screen name="AddToken" component={AddTokenScreen} />
+						<Stack.Screen name="TokenDetails" component={TokenDetailsScreen} />
+						<Stack.Screen name="SwapToken" component={SwapTokenScreen} />
+					</Stack.Navigator>
+				</View>
+			</NavigationContainer>
+		</GestureHandlerRootView>
 	);
 };
 
@@ -38,6 +41,7 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: theme.background,
+		fontFamily: 'monospace',
 	},
 });
 

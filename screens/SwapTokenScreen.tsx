@@ -14,7 +14,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { theme } from '../utils/theme';
 import { fetchTokenPrice, fetchCoins } from '../utils/api';
-import { saveToken } from '../utils/storage';
+import { loadCurrency, saveToken } from '../utils/storage';
 import { Feather } from '@expo/vector-icons';
 import { RootStackParamList } from '../types/navigation';
 import { Picker } from '@react-native-picker/picker';
@@ -38,7 +38,6 @@ interface Token {
 	additions: TokenAddition[];
 }
 
-
 const SwapTokenScreen = () => {
 	const navigation = useNavigation<import('@react-navigation/native').NavigationProp<RootStackParamList>>();
 	const route = useRoute();
@@ -52,6 +51,7 @@ const SwapTokenScreen = () => {
 	const debounceTimer = useRef<any>(null);
 	const [fromModalVisible, setFromModalVisible] = useState(false);
 	const [toModalVisible, setToModalVisible] = useState(false);
+	const [currency, setCurrency] = useState('usd');
 
 	useEffect(() => {
 		const fetchTokens = async () => {
@@ -59,7 +59,7 @@ const SwapTokenScreen = () => {
 			if (coins) {
 				setTokens(coins);
 				if (tokenId) {
-					const selectedToken = coins.find(coin => coin.id === tokenId) || null
+					const selectedToken = coins.find(coin => coin.id === tokenId) || null;
 					setFromToken(selectedToken);
 					if (totalAmount) {
 						setFromAmount(String(totalAmount));
@@ -97,11 +97,9 @@ const SwapTokenScreen = () => {
 				setIsCalculating(false);
 			}
 		};
-
 		if (debounceTimer.current) {
 			clearTimeout(debounceTimer.current);
 		}
-
 		debounceTimer.current = setTimeout(() => {
 			calculateToAmount();
 		}, 500);
@@ -124,13 +122,6 @@ const SwapTokenScreen = () => {
 			Alert.alert('Error', 'Invalid amount');
 			return;
 		}
-
-		const tokenToSwap = tokens.find(token => token.id === fromToken.id);
-		if (tokenToSwap && parsedFromAmount > (totalAmount || 0)) {
-			Alert.alert('Error', `You cannot swap more than your current balance of ${totalAmount || 0}.`)
-			return;
-		}
-
 		Alert.alert(
 			'Swap Tokens',
 			`Are you sure you want to swap ${fromAmount} ${fromToken.name} for ${toAmount} ${toToken.name}?`,
@@ -143,24 +134,30 @@ const SwapTokenScreen = () => {
 					text: 'Swap',
 					onPress: async () => {
 						setIsCalculating(true);
+						const currency1 = await loadCurrency('1')
+						const currency2 = await loadCurrency('2')
 						try {
 							const parsedToAmount = parseFloat(toAmount);
-							const toPrice = await fetchTokenPrice(toToken.id);
-
+							const toPrice1 = await fetchTokenPrice(toToken.id, currency1!)
+							const toPrice2 = await fetchTokenPrice(toToken.id, currency2!)
 							// Subtract from fromToken
 							await saveToken({
 								id: fromToken.id,
 								name: fromToken.name,
-								amount: String(-parsedFromAmount)
+								amount: String(-parsedFromAmount),
+								selectedCurrency1: currency1!,
+								selectedCurrency2: currency2!
 							});
 							// Add to toToken
 							await saveToken({
 								id: toToken.id,
 								name: toToken.name,
 								amount: String(parsedToAmount),
-								price: toPrice
+								priceCurrency1: toPrice1,
+								priceCurrency2: toPrice2,
+								selectedCurrency1: currency1!,
+								selectedCurrency2: currency2!
 							});
-
 							navigation.goBack();
 						}
 						catch (error) {
@@ -175,6 +172,10 @@ const SwapTokenScreen = () => {
 			],
 			{ cancelable: false }
 		);
+	};
+	const handleSelectFromToken = (token: Coin) => {
+		setFromToken(token);
+		setFromModalVisible(false);
 	};
 
 	const handleOpenFromModal = () => {
@@ -193,15 +194,11 @@ const SwapTokenScreen = () => {
 		setToModalVisible(false);
 	};
 
-	const handleSelectFromToken = (token: Coin) => {
-		setFromToken(token);
-		setFromModalVisible(false);
-	};
-
 	const handleSelectToToken = (token: Coin) => {
 		setToToken(token);
 		setToModalVisible(false);
 	};
+
 
 	const renderTokenItem = ({ item }: { item: Coin }, isFrom: boolean) => (
 		<TouchableOpacity style={styles.tokenItem} onPress={() => isFrom ? handleSelectFromToken(item) : handleSelectToToken(item)}>
@@ -214,7 +211,7 @@ const SwapTokenScreen = () => {
 			<Text style={styles.title}>Swap Tokens</Text>
 
 			{/* From Token Selection */}
-			<View style={styles.inputContainer}>
+			<View style={styles.pickerContainer}>
 				<Text style={styles.label}>From Token:</Text>
 				<TouchableOpacity style={styles.selectButton} onPress={handleOpenFromModal}>
 					<Text style={styles.selectText}>
@@ -240,7 +237,7 @@ const SwapTokenScreen = () => {
 
 
 			{/* To Token Selection */}
-			<View style={styles.inputContainer}>
+			<View style={styles.pickerContainer}>
 				<Text style={styles.label}>To Token:</Text>
 				<TouchableOpacity style={styles.selectButton} onPress={handleOpenToModal}>
 					<Text style={styles.selectText}>
@@ -261,7 +258,6 @@ const SwapTokenScreen = () => {
 			) : null}
 
 			<Button title="Swap Tokens" onPress={handleSwapTokens} disabled={isCalculating} color={theme.primary} />
-
 			<Modal
 				animationType="slide"
 				transparent={true}
@@ -345,13 +341,12 @@ const styles = StyleSheet.create({
 	},
 	selectText: {
 		fontSize: 16,
-		color: theme.text,
 	},
 	centeredView: {
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+		backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent
 	},
 	modalView: {
 		margin: 20,
@@ -367,14 +362,37 @@ const styles = StyleSheet.create({
 		shadowRadius: 4,
 		elevation: 5,
 	},
+	searchContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		borderBottomWidth: 1,
+		borderBottomColor: '#eee',
+		marginBottom: 10,
+	},
+	searchIcon: {
+		marginRight: 10
+	},
+	searchInput: {
+		flex: 1,
+		height: 40,
+		paddingVertical: 5,
+	},
+	modalClose: {
+		paddingLeft: 10
+	},
 	tokenItem: {
 		padding: 10,
 		borderBottomWidth: 1,
-		borderBottomColor: theme.border,
+		borderBottomColor: '#eee',
 	},
 	tokenItemText: {
 		fontSize: 16,
-		color: theme.text
+	},
+	pickerContainer: {
+		marginBottom: 10,
+		borderWidth: 1,
+		borderColor: theme.border,
+		borderRadius: 5,
 	},
 	picker: {
 		height: 50,
