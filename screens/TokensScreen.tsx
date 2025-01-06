@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, ActivityIndicator, Modal, TextInput, Button, ScrollView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { fetchTokenPrice, fetchCurrencies } from '../utils/api';
-import { loadTokens, saveToken, loadCurrency, saveCurrency, clearStorage } from '../utils/storage';
+import { fetchTokenPrice, fetchCurrencies, } from '../utils/api';
+import { saveToken, loadCurrency, saveCurrency, loadTokens, clearStorage } from '../utils/storage';
 import TokenItem from '../components/TokenItem';
 import { theme } from '../utils/theme';
 import { Feather } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import { Picker } from '@react-native-picker/picker';
 interface TokenAddition {
 	amount: string;
 	priceAtPurchaseCurrency1: number;
-	priceAtPurchaseCurrency2: number;
+
 	timestamp: number;
 }
 
@@ -20,19 +20,16 @@ interface Token {
 	name: string;
 	additions: TokenAddition[];
 	selectedCurrency1: string;
-	selectedCurrency2: string;
+
 }
 
 interface TokenData {
 	name: string;
 	id: string;
 	totalAmount: number;
-	currency1Value: number | null;
-	currency1Change: number | null;
 	selectedCurrency1: string;
-	selectedCurrency2: string;
-	currency2Value: number | null;
-	currency2Change: number | null;
+	currentValue: number | null;
+	percentageChange: number | null;
 }
 
 interface Currency {
@@ -43,8 +40,7 @@ interface Currency {
 
 const TokensScreen = () => {
 	// Constantes
-	const DEFAULT_CURRENCY_1 = "usdc";
-	const DEFAULT_CURRENCY_2 = "brl";
+	const DEFAULT_CURRENCY_1 = "USDC";
 
 	// Estado
 	const navigation = useNavigation();
@@ -55,10 +51,10 @@ const TokensScreen = () => {
 	const [redeemAmount, setRedeemAmount] = useState('');
 	const updateInterval = useRef<any>(null);
 	const [currency1, setCurrency1] = useState(DEFAULT_CURRENCY_1);
-	const [currency2, setCurrency2] = useState(DEFAULT_CURRENCY_2);
+
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState(DEFAULT_CURRENCY_1);
-	const [tempSecondaryCurrency, setTempSecondaryCurrency] = useState(DEFAULT_CURRENCY_2);
+
 	const [isPrimaryPickerVisible, setIsPrimaryPickerVisible] = useState(false);
 	const [isSecondaryPickerVisible, setIsSecondaryPickerVisible] = useState(false);
 	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
@@ -66,7 +62,7 @@ const TokensScreen = () => {
 	// Efeitos
 	useEffect(() => {
 		loadInitialTokens();
-	}, [currency1, currency2]);
+	}, [currency1]);
 
 	useFocusEffect(
 		React.useCallback(() => {
@@ -84,9 +80,9 @@ const TokensScreen = () => {
 	useEffect(() => {
 		const loadInitialCurrency = async () => {
 			const savedCurrency1 = await loadCurrency("1") || DEFAULT_CURRENCY_1;
-			const savedCurrency2 = await loadCurrency("2") || DEFAULT_CURRENCY_2;
+
 			setCurrency1(savedCurrency1);
-			setCurrency2(savedCurrency2);
+
 		};
 
 
@@ -107,50 +103,27 @@ const TokensScreen = () => {
 		try {
 			const savedTokens = await loadTokens();
 			if (savedTokens) {
-				const tokensWithPrice = await Promise.all(savedTokens.map(processToken));
+				const tokensWithPrice = await Promise.all(
+					savedTokens.map(async (token: Token) => {
+						const price = await fetchTokenPrice(token.id, currency1);
+						const totalAmount = calculateTotalAmount(token.additions);
+						const { currency1Change: percentageChange } = calculatePercentageChange(token.additions, price)
+						return {
+							...token,
+							totalAmount,
+							currentValue: price ? totalAmount * price : null,
+							percentageChange
+						};
+					})
+				);
 				setTokens(tokensWithPrice);
+			} else {
+				setTokens([]); // Se não houver tokens, define a lista como vazia
 			}
 		} catch (error) {
 			console.error('Erro ao carregar tokens', error);
 		} finally {
 			setLoading(false);
-		}
-	};
-
-	const processToken = async (token: Token): Promise<TokenData> => {
-		try {
-			const currentPriceCurrency1 = await fetchTokenPrice(token.id, currency1);
-			const currentPriceCurrency2 = await fetchTokenPrice(token.id, currency2);
-			const totalAmount = calculateTotalAmount(token.additions);
-
-			const { currency1Change, currency2Change } = calculatePercentageChange(
-				token.additions,
-				currentPriceCurrency1,
-				currentPriceCurrency2
-			);
-
-			return {
-				...token,
-				totalAmount,
-				currency1Value: currentPriceCurrency1 ? totalAmount * currentPriceCurrency1 : null,
-				currency2Value: currentPriceCurrency2 ? totalAmount * currentPriceCurrency2 : null,
-				currency1Change,
-				currency2Change,
-				selectedCurrency1: currency1,
-				selectedCurrency2: currency2,
-			};
-		} catch (error) {
-			console.error(`Erro ao processar token ${token.id}`, error);
-			return {
-				...token,
-				totalAmount: 0,
-				currency1Value: null,
-				currency2Value: null,
-				currency1Change: null,
-				currency2Change: null,
-				selectedCurrency1: currency1,
-				selectedCurrency2: currency2,
-			};
 		}
 	};
 
@@ -161,16 +134,15 @@ const TokensScreen = () => {
 	const calculatePercentageChange = (
 		additions: TokenAddition[],
 		currentPriceCurrency1: number | null,
-		currentPriceCurrency2: number | null
-	): { currency1Change: number | null; currency2Change: number | null } => {
+
+	): { currency1Change: number | null } => {
 		// Verifica se os preços atuais estão disponíveis
-		if (!currentPriceCurrency1 || !currentPriceCurrency2 || additions.length === 0) {
+		if (!currentPriceCurrency1 || additions.length === 0) {
 			console.log("Preços atuais ou adições não disponíveis.");
-			return { currency1Change: null, currency2Change: null };
+			return { currency1Change: null };
 		}
 
 		let totalInvestmentCurrency1 = 0; // Total investido para moeda 1
-		let totalInvestmentCurrency2 = 0; // Total investido para moeda 2
 		let totalAmount = 0; // Total de quantidades
 
 		// Itera sobre as adições para calcular o total investido e a quantidade total
@@ -178,34 +150,30 @@ const TokensScreen = () => {
 			const amount = parseFloat(addition.amount);
 			totalAmount += amount; // Soma a quantidade total
 			totalInvestmentCurrency1 += amount * addition.priceAtPurchaseCurrency1; // Usa o preço no momento da compra para moeda 1
-			totalInvestmentCurrency2 += amount * addition.priceAtPurchaseCurrency2; // Usa o preço no momento da compra para moeda 2
 
 			// Logs para debugar
 			console.log(`Adição: ${JSON.stringify(addition)}`);
 			console.log(`Total Amount: ${totalAmount}`);
 			console.log(`Total Investment Currency 1: ${totalInvestmentCurrency1}`);
-			console.log(`Total Investment Currency 2: ${totalInvestmentCurrency2}`);
 		});
 
 		// Calcula o valor total atual para cada moeda
 		const currentTotalValueCurrency1 = totalAmount * currentPriceCurrency1;
-		const currentTotalValueCurrency2 = totalAmount * currentPriceCurrency2;
 
 		// Logs para verificar os valores atuais
 		console.log(`Current Price Currency 1: ${currentPriceCurrency1}`);
-		console.log(`Current Price Currency 2: ${currentPriceCurrency2}`);
+
 		console.log(`Current Total Value Currency 1: ${currentTotalValueCurrency1}`);
-		console.log(`Current Total Value Currency 2: ${currentTotalValueCurrency2}`);
+
 
 		// Calcula a porcentagem de mudança
 		const currency1Change = ((currentTotalValueCurrency1 - totalInvestmentCurrency1) / totalInvestmentCurrency1) * 100;
-		const currency2Change = ((currentTotalValueCurrency2 - totalInvestmentCurrency2) / totalInvestmentCurrency2) * 100;
 
 		// Logs para verificar as porcentagens calculadas
 		console.log(`Currency 1 Change: ${currency1Change}`);
-		console.log(`Currency 2 Change: ${currency2Change}`);
 
-		return { currency1Change, currency2Change };
+
+		return { currency1Change };
 	};
 
 	const handleOpenRedeemModal = (tokenId: string) => {
@@ -232,16 +200,16 @@ const TokensScreen = () => {
 			}
 
 			const currentPrice1 = await fetchTokenPrice(selectedTokenId, currency1);
-			const currentPrice2 = await fetchTokenPrice(selectedTokenId, currency2);
+
 
 			await saveToken({
 				id: selectedTokenId,
 				name: tokens.find(token => token.id === selectedTokenId)?.name || '',
 				amount: String(-amount),
 				priceCurrency1: currentPrice1,
-				priceCurrency2: currentPrice2,
+
 				selectedCurrency1: currency1,
-				selectedCurrency2: currency2,
+
 			});
 			loadInitialTokens();
 			handleCloseRedeemModal();
@@ -265,9 +233,9 @@ const TokensScreen = () => {
 
 	const handleConfirmCurrencySelection = async () => {
 		setCurrency1(tempPrimaryCurrency);
-		setCurrency2(tempSecondaryCurrency);
+
 		await saveCurrency("1", tempPrimaryCurrency!); // Salva a moeda primária
-		await saveCurrency("2", tempSecondaryCurrency!); // Salva a moeda secundária
+
 		handleCloseSettingsModal(); // Fecha o modal
 
 		// Recarrega os tokens após a seleção das moedas
@@ -310,17 +278,17 @@ const TokensScreen = () => {
 						<TokenItem
 							name={item.name}
 							totalAmount={item.totalAmount}
-							currency1Value={item.currency1Value}
+							currency1Value={item.currentValue}
 							onRedeem={() => handleOpenRedeemModal(item.id)}
 							onPress={() => handleTokenPress(item.id)}
-							currency1PercentageChange={item.currency1Change}
+							currency1PercentageChange={item.percentageChange}
 							selectedCurrency1={item.selectedCurrency1}
-							selectedCurrency2={item.selectedCurrency2}
-							currency2Value={item.currency2Value}
-							currency2PercentageChange={item.currency2Change}
+
 						/>
 					)}
 					style={styles.listStyle}
+					onRefresh={loadInitialTokens}
+					refreshing={loading}
 				/>
 			)}
 
@@ -379,20 +347,6 @@ const TokensScreen = () => {
 								</Picker>
 							)}
 							<Text style={styles.label}>Select currency 2</Text>
-							<TouchableOpacity onPress={() => { setIsSecondaryPickerVisible(true); setIsPrimaryPickerVisible(false); }}>
-								<Text style={styles.selectText}>{tempSecondaryCurrency}</Text>
-							</TouchableOpacity>
-							{isSecondaryPickerVisible && (
-								<Picker
-									selectedValue={tempSecondaryCurrency}
-									onValueChange={(value) => setTempSecondaryCurrency(value)}
-									style={[styles.picker, { minWidth: '100%', height: 150 }]}
-								>
-									{currencies?.map(currency => (
-										<Picker.Item key={currency.id} label={`${currency.name} (${currency.symbol.toUpperCase()})`} value={currency.id} />
-									))}
-								</Picker>
-							)}
 							<TouchableOpacity style={styles.confirmButton} onPress={handleConfirmCurrencySelection}>
 								<Text style={styles.confirmButtonText}>Confirm</Text>
 							</TouchableOpacity>

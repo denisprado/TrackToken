@@ -9,6 +9,8 @@ import {
 	Modal,
 	TouchableOpacity,
 	FlatList,
+	Platform,
+	KeyboardAvoidingView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { loadCurrency, saveToken } from '../utils/storage';
@@ -57,6 +59,14 @@ interface CoinMarketData {
 	last_updated: string;
 }
 
+interface Token {
+	id: string;
+	name: string;
+	amount: string;
+	priceCurrency1: number;
+	selectedCurrency1: string;
+}
+
 const AddTokenScreen = () => {
 	const navigation = useNavigation();
 	const [tokens, setTokens] = useState<Coin[]>([]);
@@ -68,7 +78,6 @@ const AddTokenScreen = () => {
 	const [currentTokenValue, setCurrentTokenValue] = useState<string>('');
 	const [totalValueReceived, setTotalValueReceived] = useState<string>('0.00');
 	const [currency1, setCurrency1] = useState<string>('');
-	const [currency2, setCurrency2] = useState<string>('');
 	const [isEditing, setIsEditing] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -88,9 +97,7 @@ const AddTokenScreen = () => {
 	useEffect(() => {
 		const fetchCurrencies = async () => {
 			const currency1Value = await loadCurrency('1');
-			const currency2Value = await loadCurrency('2');
 			setCurrency1(currency1Value ?? '');
-			setCurrency2(currency2Value ?? '');
 		};
 
 		fetchCurrencies();
@@ -157,17 +164,13 @@ const AddTokenScreen = () => {
 			return;
 		}
 
-		const currency2 = await loadCurrency('2');
-
 		try {
 			await saveToken({
 				id: selectedToken.id,
 				name: selectedToken.name,
 				amount: amount.toString(),
 				priceCurrency1: currentValue,
-				priceCurrency2: null,
-				selectedCurrency1: currency1!,
-				selectedCurrency2: currency2!
+				selectedCurrency1: currency1
 			});
 			navigation.goBack();
 		} catch (error) {
@@ -195,91 +198,99 @@ const AddTokenScreen = () => {
 	);
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.title}>Add New Token</Text>
+		<KeyboardAvoidingView
+			style={{ flex: 1 }}
+			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+		// keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+		>
+			<View style={styles.container}>
+				<Text style={styles.title}>Add New Token</Text>
 
-			{/* Token Selection */}
-			<View style={styles.inputContainer}>
-				<Text style={styles.label}>Select Token:</Text>
-				<TouchableOpacity style={styles.selectButton} onPress={handleOpenModal}>
-					<Text style={styles.selectText}>
-						{selectedToken ? `${selectedToken.name} (${selectedToken.symbol.toUpperCase()})` : 'Select a token'}
-					</Text>
-					<Feather name="chevron-down" size={20} color="grey" />
-				</TouchableOpacity>
-			</View>
-
-			{/* Valor Atual do Token */}
-			<View style={styles.inputContainer}>
-				<Text style={styles.label}>Current Value in {currency1}:</Text>
-				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
-					<TextInput
-						style={[styles.input, { color: theme.text, flex: 1 }]}
-						keyboardType="numeric"
-						value={currentTokenValue}
-						onChangeText={handleCurrentTokenValueChange}
-						placeholder="Enter current value"
-						placeholderTextColor={theme.secondaryText}
-						selectionColor={theme.secondaryText}
-						editable={isEditing}
-					/>
-					<TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
-						<Feather name={isEditing ? "check" : "edit"} size={24} color="grey" />
+				{/* Token Selection */}
+				<View style={styles.inputContainer}>
+					<Text style={styles.label}>Select Token:</Text>
+					<TouchableOpacity style={styles.selectButton} onPress={handleOpenModal}>
+						<Text style={styles.selectText}>
+							{selectedToken ? `${selectedToken.name} (${selectedToken.symbol.toUpperCase()})` : 'Select a token'}
+						</Text>
+						<Feather name="chevron-down" size={20} color="grey" />
 					</TouchableOpacity>
 				</View>
-			</View>
 
-			{/* Valor Total Recebido */}
-			<View style={styles.inputContainer}>
-				<Text style={styles.label}>Total Value Received in {currency1}:</Text>
-				<Text style={styles.value}>{totalValueReceived}</Text>
-			</View>
+				{/* Token Amount Input */}
+				<View style={styles.inputContainer}>
+					<Text style={styles.label}>Amount of Tokens:</Text>
+					<TextInput
+						style={[styles.input, { color: theme.text }]}
+						keyboardType="numeric"
+						value={tokenAmount}
+						onChangeText={handleTokenAmountChange}
+						placeholder="Enter amount"
+						placeholderTextColor={theme.secondaryText}
+						selectionColor={theme.secondaryText}
+					/>
+				</View>
 
-			{/* Token Amount Input */}
-			<View style={styles.inputContainer}>
-				<Text style={styles.label}>Amount of Tokens:</Text>
-				<TextInput
-					style={[styles.input, { color: theme.text }]}
-					keyboardType="numeric"
-					value={tokenAmount}
-					onChangeText={handleTokenAmountChange}
-					placeholder="Enter amount"
-					placeholderTextColor={theme.secondaryText}
-					selectionColor={theme.secondaryText}
-				/>
-			</View>
-
-			<Button title="Add Token" onPress={handleAddToken} color={theme.primary} />
-
-			<Modal
-				animationType="slide"
-				transparent={true}
-				visible={modalVisible}
-				onRequestClose={handleCloseModal}
-			>
-				<View style={styles.centeredView}>
-					<View style={styles.modalView}>
-						<View style={styles.searchContainer}>
-							<Feather name="search" size={20} color={theme.secondaryText} style={styles.searchIcon} />
-							<TextInput
-								placeholder="Search token"
-								style={[styles.searchInput, { color: theme.text }]}
-								onChangeText={setSearchText}
-								placeholderTextColor={theme.secondaryText}
-							/>
-							<TouchableOpacity onPress={handleCloseModal} style={styles.modalClose}>
-								<Feather name="x" size={20} color={theme.secondaryText} />
-							</TouchableOpacity>
-						</View>
-						<FlatList
-							data={filteredTokens}
-							renderItem={renderTokenItem}
-							keyExtractor={(item) => item.id}
+				{/* Valor Atual do Token */}
+				<View style={styles.inputContainer}>
+					<Text style={styles.label}>Current Value in {currency1}:</Text>
+					<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+						<TextInput
+							style={[styles.input, { color: theme.text, flex: 1 }]}
+							keyboardType="numeric"
+							value={currentTokenValue}
+							onChangeText={handleCurrentTokenValueChange}
+							placeholder="Enter current value"
+							placeholderTextColor={theme.secondaryText}
+							selectionColor={theme.secondaryText}
+							editable={isEditing}
 						/>
+						<TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
+							<Feather name={isEditing ? "check" : "edit"} size={24} color="grey" />
+						</TouchableOpacity>
 					</View>
 				</View>
-			</Modal>
-		</View>
+
+				{/* Valor Total Recebido */}
+				<View style={styles.inputContainer}>
+					<Text style={styles.label}>Total Value Received in {currency1}:</Text>
+					<Text style={styles.value}>{totalValueReceived}</Text>
+				</View>
+
+
+
+				<Button title="Add Token" onPress={handleAddToken} color={theme.primary} />
+
+				<Modal
+					animationType="slide"
+					transparent={true}
+					visible={modalVisible}
+					onRequestClose={handleCloseModal}
+				>
+					<View style={styles.centeredView}>
+						<View style={styles.modalView}>
+							<View style={styles.searchContainer}>
+								<Feather name="search" size={20} color={theme.secondaryText} style={styles.searchIcon} />
+								<TextInput
+									placeholder="Search token"
+									style={[styles.searchInput, { color: theme.text }]}
+									onChangeText={setSearchText}
+									placeholderTextColor={theme.secondaryText}
+								/>
+								<TouchableOpacity onPress={handleCloseModal} style={styles.modalClose}>
+									<Feather name="x" size={20} color={theme.secondaryText} />
+								</TouchableOpacity>
+							</View>
+							<FlatList
+								data={filteredTokens}
+								renderItem={renderTokenItem}
+								keyExtractor={(item) => item.id}
+							/>
+						</View>
+					</View>
+				</Modal>
+			</View>
+		</KeyboardAvoidingView>
 	);
 };
 

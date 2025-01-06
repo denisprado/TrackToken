@@ -14,7 +14,6 @@ interface TokenAddition {
 	timestamp: number;
 	price: number | null;
 	currency1PercentageChange: number | null
-	currency2PercentageChange: number | null
 }
 
 interface Token {
@@ -22,7 +21,6 @@ interface Token {
 	name: string;
 	additions: TokenAddition[];
 	selectedCurrency1: string;
-	selectedCurrency2: string;
 }
 
 
@@ -51,13 +49,9 @@ const TokenDetailsScreen = () => {
 							const currentPrice1 = await fetchTokenPrice(tokenDetails.id, tokenDetails.selectedCurrency1);
 							const currency1PercentageChange = currentPrice1 ? (((currentPrice1 - (addition.amount > "0" ? currentPrice1 : 0)) / (addition.amount > "0" ? currentPrice1 : 0)) * 100) : null;
 
-							const currentPrice2 = await fetchTokenPrice(tokenDetails.id, tokenDetails.selectedCurrency2);
-							const currency2PercentageChange = currentPrice2 ? (((currentPrice2 - (addition.amount > "0" ? currentPrice2 : 0)) / (addition.amount > "0" ? currentPrice2 : 0)) * 100) : null;
-
 							return {
 								...addition,
 								currency1PercentageChange,
-								currency2PercentageChange,
 								price: currentPrice1
 							};
 						})
@@ -102,21 +96,16 @@ const TokenDetailsScreen = () => {
 			}
 
 			const currency1 = await loadCurrency('1')
-			const currency2 = await loadCurrency('2')
 			const currentPrice1 = await fetchTokenPrice(tokenId, currency1!);
-			const currentPrice2 = await fetchTokenPrice(tokenId, currency2!);
 
 			console.log("Preço atual da moeda 1:", currentPrice1);
-			console.log("Preço atual da moeda 2:", currentPrice2);
 
 			await saveToken({
 				id: tokenId,
 				name: token?.name || '',
 				amount: String(-amount),
 				priceCurrency1: currentPrice1,
-				priceCurrency2: currentPrice2,
 				selectedCurrency1: token!.selectedCurrency1,
-				selectedCurrency2: token!.selectedCurrency2,
 			});
 			loadTokenDetails();
 			handleCloseRedeemModal();

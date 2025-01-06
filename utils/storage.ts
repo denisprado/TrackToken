@@ -8,7 +8,6 @@ const CURRENCY = ["usdc", "brl"]; // Lista de moedas suportadas
 interface TokenAddition {
   amount: string; // Quantidade adicionada
   priceAtPurchaseCurrency1: number; // Preço no momento da compra para a moeda 1
-  priceAtPurchaseCurrency2: number; // Preço no momento da compra para a moeda 2
   timestamp: number; // Timestamp da adição
 }
 
@@ -18,7 +17,7 @@ interface Token {
   name: string; // Nome do token
   additions: TokenAddition[]; // Lista de adições do token
   selectedCurrency1: string; // Moeda selecionada 1
-  selectedCurrency2: string; // Moeda selecionada 2
+  
 }
 
 // Função para salvar um token no armazenamento
@@ -26,9 +25,8 @@ export const saveToken = async (
   token: Omit<Token, "additions"> & {
     amount: string; // Quantidade a ser adicionada
     priceCurrency1?: number | null; // Preço da moeda 1 (opcional)
-    priceCurrency2?: number | null; // Preço da moeda 2 (opcional)
     selectedCurrency1: string; // Moeda selecionada 1
-    selectedCurrency2: string; // Moeda selecionada 2
+    
   }
 ) => {
   try {
@@ -47,7 +45,7 @@ export const saveToken = async (
     const newTokenAddition: TokenAddition = {
       amount: token.amount, // Quantidade adicionada
       priceAtPurchaseCurrency1: token.priceCurrency1 || 0, // Preço no momento da compra para moeda 1
-      priceAtPurchaseCurrency2: token.priceCurrency2 || 0, // Preço no momento da compra para moeda 2
+      
       timestamp: Date.now(), // Timestamp atual
     };
 
@@ -59,8 +57,7 @@ export const saveToken = async (
       existingTokens[existingTokenIndex].additions.push(newTokenAddition); // Adiciona a nova adição
       existingTokens[existingTokenIndex].selectedCurrency1 =
         token.selectedCurrency1; // Atualiza a moeda selecionada 1
-      existingTokens[existingTokenIndex].selectedCurrency2 =
-        token.selectedCurrency2; // Atualiza a moeda selecionada 2
+      
     } else {
       // Se for um novo token, adiciona ao array
       existingTokens.push({

@@ -36,6 +36,7 @@ interface Token {
 	id: string;
 	name: string;
 	additions: TokenAddition[];
+	selectedCurrency1: string;
 }
 
 const SwapTokenScreen = () => {
@@ -78,8 +79,8 @@ const SwapTokenScreen = () => {
 			}
 			setIsCalculating(true);
 			try {
-				const fromPrice = await fetchTokenPrice(fromToken.id);
-				const toPrice = await fetchTokenPrice(toToken.id);
+				const fromPrice = await fetchTokenPrice(fromToken.id, currency);
+				const toPrice = await fetchTokenPrice(toToken.id, currency);
 				if (fromPrice && toPrice) {
 					const amount = parseFloat(fromAmount.replace(',', '.'));
 					if (isNaN(amount)) {
@@ -112,7 +113,7 @@ const SwapTokenScreen = () => {
 	}, [fromToken, toToken, fromAmount]);
 
 	const handleSwapTokens = async () => {
-		if (!fromToken || !toToken || !fromAmount || !toAmount) {
+		if (!fromToken || !toToken || !fromAmount) {
 			Alert.alert('Error', 'Please select tokens and enter the amount.');
 			return;
 		}
@@ -134,19 +135,16 @@ const SwapTokenScreen = () => {
 					text: 'Swap',
 					onPress: async () => {
 						setIsCalculating(true);
-						const currency1 = await loadCurrency('1')
-						const currency2 = await loadCurrency('2')
+						const currency1 = await loadCurrency('1');
+						const parsedToAmount = parseFloat(toAmount);
 						try {
-							const parsedToAmount = parseFloat(toAmount);
-							const toPrice1 = await fetchTokenPrice(toToken.id, currency1!)
-							const toPrice2 = await fetchTokenPrice(toToken.id, currency2!)
+							const toPrice1 = await fetchTokenPrice(toToken.id, currency1!);
 							// Subtract from fromToken
 							await saveToken({
 								id: fromToken.id,
 								name: fromToken.name,
 								amount: String(-parsedFromAmount),
-								selectedCurrency1: currency1!,
-								selectedCurrency2: currency2!
+								selectedCurrency1: currency1!
 							});
 							// Add to toToken
 							await saveToken({
@@ -154,17 +152,13 @@ const SwapTokenScreen = () => {
 								name: toToken.name,
 								amount: String(parsedToAmount),
 								priceCurrency1: toPrice1,
-								priceCurrency2: toPrice2,
-								selectedCurrency1: currency1!,
-								selectedCurrency2: currency2!
+								selectedCurrency1: currency1!
 							});
 							navigation.goBack();
-						}
-						catch (error) {
+						} catch (error) {
 							console.error('Failed to swap tokens', error);
 							Alert.alert('Error', 'Failed to swap tokens.');
-						}
-						finally {
+						} finally {
 							setIsCalculating(false);
 						}
 					}

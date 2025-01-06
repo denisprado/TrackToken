@@ -11,9 +11,6 @@ interface TokenItemProps {
 	onRedeem: () => void;
 	currency1PercentageChange: number | null;
 	selectedCurrency1: string;
-	selectedCurrency2: string;
-	currency2Value: number | null;
-	currency2PercentageChange: number | null;
 	onPress: () => void;
 }
 
@@ -24,9 +21,7 @@ const TokenItem: React.FC<TokenItemProps> = ({
 	currency1Value,
 	currency1PercentageChange,
 	selectedCurrency1,
-	selectedCurrency2,
-	currency2Value,
-	currency2PercentageChange,
+
 	onPress,
 }) => {
 	// Função para formatar o nome do token
@@ -46,30 +41,16 @@ const TokenItem: React.FC<TokenItemProps> = ({
 			</View>
 			<View style={styles.centerContainer}>
 				<Text style={[styles.value, currency1PercentageChange !== null ? (currency1PercentageChange >= 0 ? styles.gain : styles.loss) : null]}>
-					{currency1Value !== null ? currency1Value?.toFixed(2) : 'Loading...'}
+					{currency1Value !== null ? <><Text style={styles.currency}>{selectedCurrency1}</Text>{currency1Value?.toFixed(2)}</> : 'Loading...'}
 				</Text>
 				{currency1PercentageChange !== null && (
 					<Text style={[styles.currency1PercentageChange, currency1PercentageChange >= 0 ? styles.gain : styles.loss]}>
 						({currency1PercentageChange?.toFixed(2)}%)
 					</Text>
 				)}
-				<Text style={styles.currency}>{selectedCurrency1}</Text>
+
 			</View>
-			<View style={styles.rightContainer}>
-				{currency2Value !== null && (
-					<View style={styles.currencyValueContainer}>
-						<Text style={[styles.value, currency2PercentageChange !== null ? (currency2PercentageChange >= 0 ? styles.gain : styles.loss) : null]}>
-							{currency2Value?.toFixed(2)}
-						</Text>
-						{currency2PercentageChange !== null && (
-							<Text style={[styles.currency1PercentageChange, currency2PercentageChange >= 0 ? styles.gain : styles.loss]}>
-								({currency2PercentageChange?.toFixed(2)}%)
-							</Text>
-						)}
-					</View>
-				)}
-				<Text style={styles.currency}>{selectedCurrency2?.toUpperCase()}</Text>
-			</View>
+
 			<View style={styles.detailsButton}>
 				<Feather name="chevron-right" size={18} color={theme.secondaryText} />
 			</View>
@@ -94,17 +75,12 @@ const styles = StyleSheet.create({
 		paddingLeft: 5,
 	},
 	centerContainer: {
-		width: '28%',
+		width: '56%',
 		paddingLeft: 5,
-
 		flexDirection: 'column',
 		alignItems: 'flex-end',
 	},
-	rightContainer: {
-		width: '28%',
-		alignItems: 'flex-end',
-		paddingLeft: 5,
-	},
+
 	currencyValueContainer: {
 		alignItems: 'flex-end',
 	},
@@ -118,6 +94,7 @@ const styles = StyleSheet.create({
 		fontSize: 12,
 		color: theme.secondaryText,
 		fontFamily: 'monospace',
+
 	},
 	value: {
 		fontSize: 12,
@@ -136,6 +113,8 @@ const styles = StyleSheet.create({
 		color: theme.error,
 	},
 	currency: {
+		textTransform: 'uppercase',
+		paddingRight: 5,
 		fontSize: 12,
 		color: theme.secondaryText,
 		fontFamily: 'monospace',
