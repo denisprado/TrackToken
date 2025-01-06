@@ -42,11 +42,11 @@ const TokenItem: React.FC<TokenItemProps> = ({
 		<TouchableOpacity style={styles.itemContainer} onPress={onPress}>
 			<View style={styles.leftContainer}>
 				<Text style={styles.name}>{tokenName}</Text>
-				<Text style={styles.amount}>{symbol} {totalAmount.toFixed(6)}</Text>
+				<Text style={styles.amount}>{symbol} {totalAmount?.toFixed(6)}</Text>
 			</View>
 			<View style={styles.centerContainer}>
 				<Text style={[styles.value, currency1PercentageChange !== null ? (currency1PercentageChange >= 0 ? styles.gain : styles.loss) : null]}>
-					{currency1Value !== null ? currency1Value.toFixed(2) : 'Loading...'}
+					{currency1Value !== null ? currency1Value?.toFixed(2) : 'Loading...'}
 				</Text>
 				{currency1PercentageChange !== null && (
 					<Text style={[styles.currency1PercentageChange, currency1PercentageChange >= 0 ? styles.gain : styles.loss]}>
@@ -59,7 +59,7 @@ const TokenItem: React.FC<TokenItemProps> = ({
 				{currency2Value !== null && (
 					<View style={styles.currencyValueContainer}>
 						<Text style={[styles.value, currency2PercentageChange !== null ? (currency2PercentageChange >= 0 ? styles.gain : styles.loss) : null]}>
-							{currency2Value.toFixed(2)}
+							{currency2Value?.toFixed(2)}
 						</Text>
 						{currency2PercentageChange !== null && (
 							<Text style={[styles.currency1PercentageChange, currency2PercentageChange >= 0 ? styles.gain : styles.loss]}>

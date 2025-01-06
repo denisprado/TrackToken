@@ -17,7 +17,7 @@ const TokenAdditionItem: React.FC<TokenAdditionItemProps> = ({ amount, timestamp
 			</View>
 			{percentageChange !== null && (
 				<Text style={[styles.percentageChange, percentageChange >= 0 ? styles.gain : styles.loss]}>
-					{percentageChange.toFixed(2)}%
+					{percentageChange?.toFixed(2)}%
 				</Text>
 			)}
 		</View>

@@ -15,6 +15,7 @@ import { loadCurrency, saveToken } from '../utils/storage';
 import axios from 'axios';
 import { Feather } from '@expo/vector-icons';
 import { theme } from '../utils/theme';
+import { fetchTokenPrice } from '../utils/api';
 
 interface Coin {
 	id: string;
@@ -64,6 +65,11 @@ const AddTokenScreen = () => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [filteredTokens, setFilteredTokens] = useState<Coin[]>([]);
+	const [currentTokenValue, setCurrentTokenValue] = useState<string>('');
+	const [totalValueReceived, setTotalValueReceived] = useState<string>('0.00');
+	const [currency1, setCurrency1] = useState<string>('');
+	const [currency2, setCurrency2] = useState<string>('');
+	const [isEditing, setIsEditing] = useState<boolean>(false);
 
 	useEffect(() => {
 		const fetchCoins = async () => {
@@ -80,6 +86,17 @@ const AddTokenScreen = () => {
 	}, []);
 
 	useEffect(() => {
+		const fetchCurrencies = async () => {
+			const currency1Value = await loadCurrency('1');
+			const currency2Value = await loadCurrency('2');
+			setCurrency1(currency1Value ?? '');
+			setCurrency2(currency2Value ?? '');
+		};
+
+		fetchCurrencies();
+	}, []);
+
+	useEffect(() => {
 		if (searchText) {
 			const filtered = tokens.filter(token =>
 				token.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -92,31 +109,63 @@ const AddTokenScreen = () => {
 		}
 	}, [searchText, tokens])
 
+	useEffect(() => {
+		const fetchTokenValue = async () => {
+			if (selectedToken) {
+				const price = await fetchTokenPrice(selectedToken.id, currency1);
+				setCurrentTokenValue(price ? price.toString() : '0.00');
+			}
+		};
+
+		fetchTokenValue();
+	}, [selectedToken, currency1]);
+
 	const handleTokenAmountChange = (text: string) => {
 		const formattedText = text.replace(',', '.');
 		setTokenAmount(formattedText);
+		updateTotalValueReceived(formattedText);
+	};
+
+	const handleCurrentTokenValueChange = (text: string) => {
+		setCurrentTokenValue(text);
+		updateTotalValueReceived(tokenAmount);
+	};
+
+	const updateTotalValueReceived = (amount: string) => {
+		const parsedAmount = parseFloat(amount.replace(',', '.'));
+		const parsedCurrentValue = parseFloat(currentTokenValue.replace(',', '.'));
+
+		if (!isNaN(parsedAmount) && !isNaN(parsedCurrentValue)) {
+			const totalValue = parsedAmount * parsedCurrentValue;
+			setTotalValueReceived(totalValue.toFixed(2));
+		} else {
+			setTotalValueReceived('0.00');
+		}
 	};
 
 	const handleAddToken = async () => {
-		if (!selectedToken || !tokenAmount) {
-			Alert.alert('Error', 'Please select a token and enter the amount.');
+		if (!selectedToken || !tokenAmount || !currentTokenValue) {
+			Alert.alert('Error', 'Please select a token, enter the amount, and set the current value.');
 			return;
 		}
 
 		const amount = parseFloat(tokenAmount.replace(',', '.'));
-		if (isNaN(amount)) {
-			Alert.alert('Error', 'Invalid amount.');
+		const currentValue = parseFloat(currentTokenValue.replace(',', '.'));
+
+		if (isNaN(amount) || isNaN(currentValue)) {
+			Alert.alert('Error', 'Invalid amount or current value.');
 			return;
 		}
 
-		const currency1 = await loadCurrency('1')
-		const currency2 = await loadCurrency('2')
+		const currency2 = await loadCurrency('2');
 
 		try {
 			await saveToken({
 				id: selectedToken.id,
 				name: selectedToken.name,
 				amount: amount.toString(),
+				priceCurrency1: currentValue,
+				priceCurrency2: null,
 				selectedCurrency1: currency1!,
 				selectedCurrency2: currency2!
 			});
@@ -158,6 +207,32 @@ const AddTokenScreen = () => {
 					</Text>
 					<Feather name="chevron-down" size={20} color="grey" />
 				</TouchableOpacity>
+			</View>
+
+			{/* Valor Atual do Token */}
+			<View style={styles.inputContainer}>
+				<Text style={styles.label}>Current Value in {currency1}:</Text>
+				<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+					<TextInput
+						style={[styles.input, { color: theme.text, flex: 1 }]}
+						keyboardType="numeric"
+						value={currentTokenValue}
+						onChangeText={handleCurrentTokenValueChange}
+						placeholder="Enter current value"
+						placeholderTextColor={theme.secondaryText}
+						selectionColor={theme.secondaryText}
+						editable={isEditing}
+					/>
+					<TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
+						<Feather name={isEditing ? "check" : "edit"} size={24} color="grey" />
+					</TouchableOpacity>
+				</View>
+			</View>
+
+			{/* Valor Total Recebido */}
+			<View style={styles.inputContainer}>
+				<Text style={styles.label}>Total Value Received in {currency1}:</Text>
+				<Text style={styles.value}>{totalValueReceived}</Text>
 			</View>
 
 			{/* Token Amount Input */}
@@ -298,6 +373,11 @@ const styles = StyleSheet.create({
 	tokenItemText: {
 		fontSize: 16,
 		color: theme.text,
+	},
+	value: {
+		fontSize: 16,
+		color: theme.text,
+		fontWeight: 'bold',
 	},
 });
 

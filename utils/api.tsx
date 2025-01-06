@@ -17,6 +17,12 @@ interface Currency {
 	name: string;
 }
 
+interface TokenAddition {
+	amount: string;
+	priceAtPurchaseCurrency1: number; // Preço no momento da compra para a moeda 1
+	priceAtPurchaseCurrency2: number; // Preço no momento da compra para a moeda 2
+	timestamp: number;
+}
 
 const priceCache: { [tokenId: string]: CachedPrice } = {};
 const CACHE_EXPIRY_TIME = 60 * 1000; // 1 minuto
@@ -63,26 +69,33 @@ export const fetchCurrencies = async (): Promise<Currency[] | null> => {
 };
 
 export const fetchTokenPrice = async (tokenId: string, currency: string): Promise<number | null> => {
+	// Verifica se o preço do token já está em cache e se não expirou
 	if (priceCache[tokenId] && Date.now() - priceCache[tokenId].lastFetched < CACHE_EXPIRY_TIME) {
+		// Se o preço estiver no cache e ainda válido, retorna o valor armazenado
 		return priceCache[tokenId].value;
 	}
 
 	try {
+		// Faz uma requisição GET para a API do CoinGecko para obter o preço atual do token
 		const response = await axios.get(
 			`https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=${currency}&x_cg_demo_api_key=${API_KEY}`
 		);
 
-		const priceData = response.data;
+		const priceData = response.data; // Armazena os dados da resposta
+
+		// Verifica se os dados do preço estão disponíveis na resposta
 		if (priceData && priceData[tokenId] && priceData[tokenId][currency.toLowerCase()]) {
-			const price = priceData[tokenId][currency.toLowerCase()];
+			const price = priceData[tokenId][currency.toLowerCase()]; // Obtém o preço do token na moeda especificada
+
+			// Salva o preço e a hora da última busca no cache
 			priceCache[tokenId] = { value: price, lastFetched: Date.now() };
-			return price;
+			return price; // Retorna o preço do token
 		} else {
-			return null;
+			return null; // Retorna null se os dados do preço não estiverem disponíveis
 		}
 	} catch (error) {
-		console.error('Error fetching price:', error);
-		return null;
+		console.error('Error fetching price:', error); // Loga o erro caso a requisição falhe
+		return null; // Retorna null em caso de erro
 	}
 };
 export const fetchCoins = async (): Promise<Coin[] | null> => {

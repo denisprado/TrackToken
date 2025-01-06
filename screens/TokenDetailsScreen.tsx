@@ -106,6 +106,9 @@ const TokenDetailsScreen = () => {
 			const currentPrice1 = await fetchTokenPrice(tokenId, currency1!);
 			const currentPrice2 = await fetchTokenPrice(tokenId, currency2!);
 
+			console.log("Preço atual da moeda 1:", currentPrice1);
+			console.log("Preço atual da moeda 2:", currentPrice2);
+
 			await saveToken({
 				id: tokenId,
 				name: token?.name || '',
