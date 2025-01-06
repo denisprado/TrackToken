@@ -51,12 +51,9 @@ const TokensScreen = () => {
 	const [redeemAmount, setRedeemAmount] = useState('');
 	const updateInterval = useRef<any>(null);
 	const [currency1, setCurrency1] = useState(DEFAULT_CURRENCY_1);
-
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState(DEFAULT_CURRENCY_1);
-
 	const [isPrimaryPickerVisible, setIsPrimaryPickerVisible] = useState(false);
-	const [isSecondaryPickerVisible, setIsSecondaryPickerVisible] = useState(false);
 	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 
 	// Efeitos
@@ -253,7 +250,7 @@ const TokensScreen = () => {
 			<View style={styles.header}>
 				<Text style={styles.title}>Wallet</Text>
 				<TouchableOpacity style={styles.iconButton} onPress={handleClearStorage}>
-					<Feather name="trash-2" size={24} color={theme.text} /> {/* Ícone de lixeira */}
+					<Feather name="trash-2" size={24} color={theme.text} />
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddToken')}>
 					<Feather name="plus-circle" size={24} color={theme.text} />
@@ -331,8 +328,8 @@ const TokensScreen = () => {
 					<View style={[styles.modalView, { minWidth: '70%' }]}>
 						<Text style={styles.modalTitle}>Settings</Text>
 						<ScrollView>
-							<Text style={styles.label}>Select currency 1</Text>
-							<TouchableOpacity onPress={() => { setIsPrimaryPickerVisible(true); setIsSecondaryPickerVisible(false); }}>
+							<Text style={styles.label}>Select currency</Text>
+							<TouchableOpacity onPress={() => { setIsPrimaryPickerVisible(true); }}>
 								<Text style={styles.selectText}>{tempPrimaryCurrency}</Text>
 							</TouchableOpacity>
 							{isPrimaryPickerVisible && (
@@ -346,7 +343,6 @@ const TokensScreen = () => {
 									))}
 								</Picker>
 							)}
-							<Text style={styles.label}>Select currency 2</Text>
 							<TouchableOpacity style={styles.confirmButton} onPress={handleConfirmCurrencySelection}>
 								<Text style={styles.confirmButtonText}>Confirm</Text>
 							</TouchableOpacity>
