@@ -9,6 +9,8 @@ import { RootStackParamList } from './types/navigation';
 import TokenDetailsScreen from './screens/TokenDetailsScreen';
 import SwapTokenScreen from './screens/SwapTokenScreen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import WalletsScreen from './screens/WalletsScreen';
+import CreateWalletScreen from './screens/CreateWalletScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -17,7 +19,7 @@ const App = () => {
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<NavigationContainer >
 				<View style={styles.container}>
-					<Stack.Navigator initialRouteName="Tokens" screenOptions={{
+					<Stack.Navigator initialRouteName="Wallets" screenOptions={{
 						headerStyle: {
 							backgroundColor: theme.background
 						},
@@ -26,10 +28,12 @@ const App = () => {
 						},
 						headerTintColor: theme.text
 					}}>
+						<Stack.Screen name="Wallets" component={WalletsScreen} options={{ headerShown: false }} />
 						<Stack.Screen name="Tokens" component={TokensScreen} options={{ headerShown: false }} />
 						<Stack.Screen name="AddToken" component={AddTokenScreen} />
 						<Stack.Screen name="TokenDetails" component={TokenDetailsScreen} />
 						<Stack.Screen name="SwapToken" component={SwapTokenScreen} />
+						<Stack.Screen name="CreateWalletScreen" component={CreateWalletScreen} />
 					</Stack.Navigator>
 				</View>
 			</NavigationContainer>

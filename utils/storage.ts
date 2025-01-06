@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Importa o AsyncStorage para armazenamento local
+import { TokenData } from "../screens/TokensScreen";
 
 const STORAGE_KEY = "token_data"; // Chave para armazenar os dados dos tokens
 const CURRENCY_KEY = "selected_currency"; // Chave para armazenar a moeda selecionada
@@ -11,28 +12,25 @@ interface TokenAddition {
   timestamp: number; // Timestamp da adição
 }
 
-// Interface para representar um token
-interface Token {
-  id: string; // ID do token
-  name: string; // Nome do token
-  additions: TokenAddition[]; // Lista de adições do token
-  selectedCurrency1: string; // Moeda selecionada 1
-  
+// Interface para representar uma carteira
+interface Wallet {
+  id: string; // ID da carteira
+  name: string; // Nome da carteira
+  tokens: TokenData[]; // Lista de tokens que pertencem a esta carteira
 }
 
 // Função para salvar um token no armazenamento
 export const saveToken = async (
-  token: Omit<Token, "additions"> & {
+  token: Omit<TokenData, "additions"> & {
     amount: string; // Quantidade a ser adicionada
     priceCurrency1?: number | null; // Preço da moeda 1 (opcional)
     selectedCurrency1: string; // Moeda selecionada 1
-    
   }
 ) => {
   try {
     // Obtém os dados existentes do armazenamento
     const existingData = await AsyncStorage.getItem(STORAGE_KEY);
-    const existingTokens: Token[] = existingData
+    const existingTokens: TokenData[] = existingData
       ? JSON.parse(existingData) // Converte os dados existentes de JSON para objeto
       : []; // Se não houver dados, inicializa como um array vazio
 
@@ -45,7 +43,7 @@ export const saveToken = async (
     const newTokenAddition: TokenAddition = {
       amount: token.amount, // Quantidade adicionada
       priceAtPurchaseCurrency1: token.priceCurrency1 || 0, // Preço no momento da compra para moeda 1
-      
+
       timestamp: Date.now(), // Timestamp atual
     };
 
@@ -57,7 +55,6 @@ export const saveToken = async (
       existingTokens[existingTokenIndex].additions.push(newTokenAddition); // Adiciona a nova adição
       existingTokens[existingTokenIndex].selectedCurrency1 =
         token.selectedCurrency1; // Atualiza a moeda selecionada 1
-      
     } else {
       // Se for um novo token, adiciona ao array
       existingTokens.push({
@@ -89,7 +86,7 @@ export const saveToken = async (
 };
 
 // Função para carregar tokens do armazenamento
-export const loadTokens = async (): Promise<Token[] | null> => {
+export const loadTokens = async (): Promise<TokenData[] | null> => {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEY); // Obtém os dados do armazenamento
     return data ? JSON.parse(data) : null; // Retorna os dados como objeto ou null
@@ -103,7 +100,7 @@ export const loadTokens = async (): Promise<Token[] | null> => {
 export const removeToken = async (tokenId: string) => {
   try {
     const existingData = await AsyncStorage.getItem(STORAGE_KEY); // Obtém os dados existentes
-    const existingTokens: Token[] = existingData
+    const existingTokens: TokenData[] = existingData
       ? JSON.parse(existingData) // Converte os dados existentes de JSON para objeto
       : []; // Se não houver dados, inicializa como um array vazio
 
@@ -153,4 +150,17 @@ export const clearStorage = async () => {
   } catch (error) {
     console.error("Erro ao limpar o armazenamento:", error); // Loga o erro em caso de falha
   }
+};
+
+// Função para salvar uma carteira no armazenamento
+export const saveWallet = async (wallet: Wallet) => {
+  const wallets = await fetchWallets();
+  wallets.push(wallet);
+  await AsyncStorage.setItem("wallets", JSON.stringify(wallets));
+};
+
+// Função para carregar carteiras do armazenamento
+export const fetchWallets = async (): Promise<Wallet[]> => {
+  const wallets = await AsyncStorage.getItem("wallets");
+  return wallets ? JSON.parse(wallets) : [];
 };

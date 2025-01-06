@@ -20,7 +20,6 @@ interface Currency {
 interface TokenAddition {
   amount: string;
   priceAtPurchaseCurrency1: number; // Preço no momento da compra para a moeda 1
-
   timestamp: number;
 }
 

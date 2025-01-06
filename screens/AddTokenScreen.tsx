@@ -151,6 +151,7 @@ const AddTokenScreen = () => {
 		}
 	};
 
+	// screens/AddTokenScreen.tsx
 	const handleAddToken = async () => {
 		if (!selectedToken || !tokenAmount || !currentTokenValue) {
 			Alert.alert('Error', 'Please select a token, enter the amount, and set the current value.');
@@ -171,9 +172,10 @@ const AddTokenScreen = () => {
 				name: selectedToken.name,
 				amount: amount.toString(),
 				priceCurrency1: currentValue,
-				selectedCurrency1: currency1
+				selectedCurrency1: currency1,
+				walletId: walletId // Adicione a referência à carteira aqui
 			});
-			navigation.goBack();
+			navigation.goBack(); // Voltar para a tela anterior
 		} catch (error) {
 			Alert.alert('Error', 'Failed to save token.');
 		}

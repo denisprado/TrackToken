@@ -106,6 +106,10 @@ const TokenDetailsScreen = () => {
 				amount: String(-amount),
 				priceCurrency1: currentPrice1,
 				selectedCurrency1: token!.selectedCurrency1,
+				totalAmount: 0,
+				percentageChange: null,
+				currentValue: null,
+				walletId: undefined
 			});
 			loadTokenDetails();
 			handleCloseRedeemModal();

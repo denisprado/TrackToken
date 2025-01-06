@@ -15,16 +15,12 @@ interface TokenAddition {
 	timestamp: number;
 }
 
-interface Token {
-	id: string;
+
+
+export interface TokenData {
+	walletId: any;
 	name: string;
 	additions: TokenAddition[];
-	selectedCurrency1: string;
-
-}
-
-interface TokenData {
-	name: string;
 	id: string;
 	totalAmount: number;
 	selectedCurrency1: string;
@@ -38,12 +34,14 @@ interface Currency {
 	name: string;
 }
 
-const TokensScreen = () => {
+const TokensScreen = ({ route }: { route: any }) => {
 	// Constantes
 	const DEFAULT_CURRENCY_1 = "USDC";
 
 	// Estado
 	const navigation = useNavigation();
+	const routes = route.params; // Obter o ID da carteira
+	const walletId = routes && routes.walletId
 	const [tokens, setTokens] = useState<TokenData[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -94,6 +92,18 @@ const TokensScreen = () => {
 		fetchCurrenciesData();
 	}, []);
 
+	useEffect(() => {
+		const loadTokensForWallet = async () => {
+			const allTokens = await loadTokens(); // Carregar todos os tokens
+			if (allTokens) {
+				const walletTokens = allTokens.filter(token => token && token?.walletId! === walletId); // Filtrar tokens pela carteira
+				setTokens(walletTokens);
+			}
+		};
+
+		loadTokensForWallet();
+	}, [walletId]);
+
 	// Funções
 	const loadInitialTokens = async () => {
 		setLoading(true);
@@ -101,7 +111,7 @@ const TokensScreen = () => {
 			const savedTokens = await loadTokens();
 			if (savedTokens) {
 				const tokensWithPrice = await Promise.all(
-					savedTokens.map(async (token: Token) => {
+					savedTokens.map(async (token: TokenData) => {
 						const price = await fetchTokenPrice(token.id, currency1);
 						const totalAmount = calculateTotalAmount(token.additions);
 						const { currency1Change: percentageChange } = calculatePercentageChange(token.additions, price)
@@ -204,9 +214,11 @@ const TokensScreen = () => {
 				name: tokens.find(token => token.id === selectedTokenId)?.name || '',
 				amount: String(-amount),
 				priceCurrency1: currentPrice1,
-
 				selectedCurrency1: currency1,
-
+				walletId: walletId,
+				totalAmount: 0,
+				currentValue: null,
+				percentageChange: null
 			});
 			loadInitialTokens();
 			handleCloseRedeemModal();
