@@ -156,6 +156,7 @@ export const clearStorage = async () => {
 export const saveWallet = async (wallet: Wallet) => {
   const wallets = await fetchWallets();
   wallets.push(wallet);
+  console.log(wallets);
   await AsyncStorage.setItem("wallets", JSON.stringify(wallets));
 };
 

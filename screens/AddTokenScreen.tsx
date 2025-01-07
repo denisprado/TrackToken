@@ -68,7 +68,7 @@ interface Token {
 	selectedCurrency1: string;
 }
 
-const AddTokenScreen = () => {
+const AddTokenScreen = ({ route }: { route: any }) => {
 	const navigation = useNavigation();
 	const [tokens, setTokens] = useState<Coin[]>([]);
 	const [selectedToken, setSelectedToken] = useState<Coin | null>(null);
@@ -80,7 +80,8 @@ const AddTokenScreen = () => {
 	const [totalValueReceived, setTotalValueReceived] = useState<string>('0.00');
 	const [currency1, setCurrency1] = useState<string>('');
 	const [isEditing, setIsEditing] = useState<boolean>(false);
-
+	const routes = route.params; // Obter o ID da carteira
+	const walletId = routes && routes.walletId
 	useEffect(() => {
 		const fetchCoins = async () => {
 			try {
@@ -173,7 +174,10 @@ const AddTokenScreen = () => {
 				amount: amount.toString(),
 				priceCurrency1: currentValue,
 				selectedCurrency1: currency1,
-				walletId: walletId // Adicione a referência à carteira aqui
+				walletId: walletId,
+				totalAmount: 0,
+				currentValue: null,
+				percentageChange: null
 			});
 			navigation.goBack(); // Voltar para a tela anterior
 		} catch (error) {

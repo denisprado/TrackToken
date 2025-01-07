@@ -29,7 +29,7 @@ const App = () => {
 						headerTintColor: theme.text
 					}}>
 						<Stack.Screen name="Wallets" component={WalletsScreen} options={{ headerShown: false }} />
-						<Stack.Screen name="Tokens" component={TokensScreen} options={{ headerShown: false }} />
+						<Stack.Screen name="Tokens" component={TokensScreen} />
 						<Stack.Screen name="AddToken" component={AddTokenScreen} />
 						<Stack.Screen name="TokenDetails" component={TokenDetailsScreen} />
 						<Stack.Screen name="SwapToken" component={SwapTokenScreen} />

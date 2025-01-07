@@ -144,7 +144,11 @@ const SwapTokenScreen = () => {
 								id: fromToken.id,
 								name: fromToken.name,
 								amount: String(-parsedFromAmount),
-								selectedCurrency1: currency1!
+								selectedCurrency1: currency1!,
+								totalAmount: 0,
+								percentageChange: null,
+								currentValue: null,
+								walletId: undefined
 							});
 							// Add to toToken
 							await saveToken({
@@ -152,7 +156,11 @@ const SwapTokenScreen = () => {
 								name: toToken.name,
 								amount: String(parsedToAmount),
 								priceCurrency1: toPrice1,
-								selectedCurrency1: currency1!
+								selectedCurrency1: currency1!,
+								totalAmount: 0,
+								percentageChange: null,
+								currentValue: null,
+								walletId: undefined
 							});
 							navigation.goBack();
 						} catch (error) {

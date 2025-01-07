@@ -42,6 +42,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const navigation = useNavigation();
 	const routes = route.params; // Obter o ID da carteira
 	const walletId = routes && routes.walletId
+	const walletName = routes && routes.walletName; // Obtendo o nome da carteira a partir dos parâmetros
 	const [tokens, setTokens] = useState<TokenData[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -108,10 +109,10 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const loadInitialTokens = async () => {
 		setLoading(true);
 		try {
-			const savedTokens = await loadTokens();
-			if (savedTokens) {
+
+			if (tokens) {
 				const tokensWithPrice = await Promise.all(
-					savedTokens.map(async (token: TokenData) => {
+					tokens.map(async (token: TokenData) => {
 						const price = await fetchTokenPrice(token.id, currency1);
 						const totalAmount = calculateTotalAmount(token.additions);
 						const { currency1Change: percentageChange } = calculatePercentageChange(token.additions, price)
@@ -158,27 +159,24 @@ const TokensScreen = ({ route }: { route: any }) => {
 			totalAmount += amount; // Soma a quantidade total
 			totalInvestmentCurrency1 += amount * addition.priceAtPurchaseCurrency1; // Usa o preço no momento da compra para moeda 1
 
-			// Logs para debugar
-			console.log(`Adição: ${JSON.stringify(addition)}`);
-			console.log(`Total Amount: ${totalAmount}`);
-			console.log(`Total Investment Currency 1: ${totalInvestmentCurrency1}`);
+			// // Logs para debugar
+			// console.log(`Adição: ${JSON.stringify(addition)}`);
+			// console.log(`Total Amount: ${totalAmount}`);
+			// console.log(`Total Investment Currency 1: ${totalInvestmentCurrency1}`);
 		});
 
 		// Calcula o valor total atual para cada moeda
 		const currentTotalValueCurrency1 = totalAmount * currentPriceCurrency1;
 
 		// Logs para verificar os valores atuais
-		console.log(`Current Price Currency 1: ${currentPriceCurrency1}`);
-
-		console.log(`Current Total Value Currency 1: ${currentTotalValueCurrency1}`);
-
+		// console.log(`Current Price Currency 1: ${currentPriceCurrency1}`);
+		// console.log(`Current Total Value Currency 1: ${currentTotalValueCurrency1}`);
 
 		// Calcula a porcentagem de mudança
 		const currency1Change = ((currentTotalValueCurrency1 - totalInvestmentCurrency1) / totalInvestmentCurrency1) * 100;
 
 		// Logs para verificar as porcentagens calculadas
-		console.log(`Currency 1 Change: ${currency1Change}`);
-
+		// console.log(`Currency 1 Change: ${currency1Change}`);
 
 		return { currency1Change };
 	};
@@ -260,7 +258,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 	return (
 		<View style={styles.container}>
 			<View style={styles.header}>
-				<Text style={styles.title}>Wallet</Text>
+				<Text style={styles.title}>{walletName}</Text>
 				<TouchableOpacity style={styles.iconButton} onPress={handleClearStorage}>
 					<Feather name="trash-2" size={24} color={theme.text} />
 				</TouchableOpacity>

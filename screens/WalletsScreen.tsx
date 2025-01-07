@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native
 import { fetchWallets } from '../utils/storage'; // Função para buscar carteiras
 import { TokenData } from './TokensScreen';
 import { Feather } from '@expo/vector-icons'; // Importando Feather para ícones
+import { theme } from '../utils/theme';
 
 interface Wallet {
 	id: string;
@@ -23,12 +24,13 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	}, []);
 
 	const handleWalletPress = (wallet: Wallet) => {
-		navigation.navigate('TokensScreen', { walletId: wallet.id }); // Navegar para a tela de tokens
+		navigation.navigate('Tokens', { walletId: wallet.id, walletName: wallet.name }); // Navegar para a tela de tokens
 	};
 
 	const handleCreateWallet = () => {
 		navigation.navigate('CreateWalletScreen'); // Navegar para a tela de criação de carteira
 	};
+
 
 	const renderWalletItem = ({ item }: { item: Wallet }) => (
 		<TouchableOpacity style={styles.walletItem} onPress={() => handleWalletPress(item)}>
@@ -49,6 +51,7 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 				data={wallets}
 				renderItem={renderWalletItem}
 				keyExtractor={(item) => item.id}
+
 			/>
 		</View>
 	);
@@ -58,17 +61,19 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		padding: 20,
-		backgroundColor: '#fff',
+		backgroundColor: theme.background,
 	},
 	title: {
 		fontSize: 24,
 		fontWeight: 'bold',
 		marginBottom: 20,
+		color: theme.text
 	},
 	walletItem: {
 		padding: 15,
 		borderBottomWidth: 1,
-		borderBottomColor: '#ccc',
+		borderBottomColor: theme.border,
+		color: theme.text
 	},
 	walletName: {
 		fontSize: 18,
@@ -82,7 +87,7 @@ const styles = StyleSheet.create({
 	createButtonText: {
 		fontSize: 18,
 		marginLeft: 10,
-		color: 'green',
+		color: theme.accent,
 	},
 });
 
