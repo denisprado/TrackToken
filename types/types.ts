@@ -75,3 +75,8 @@ export interface Currency {
   symbol: string;
   name: string;
 }
+
+export interface CachedPrice {
+  value: number;
+  lastFetched: number;
+}

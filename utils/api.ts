@@ -1,27 +1,5 @@
-import axios, { AxiosError } from "axios";
-
-interface CachedPrice {
-  value: number;
-  lastFetched: number;
-}
-
-interface Coin {
-  id: string;
-  name: string;
-  symbol: string;
-  market_cap_rank: number;
-}
-interface Currency {
-  id: string;
-  symbol: string;
-  name: string;
-}
-
-interface TokenAddition {
-  amount: string;
-  priceAtPurchaseCurrency1: number; // Preço no momento da compra para a moeda 1
-  timestamp: number;
-}
+import axios from "axios";
+import { CachedPrice, Coin, Currency } from "../types/types";
 
 const priceCache: { [tokenId: string]: CachedPrice } = {};
 const CACHE_EXPIRY_TIME = 60 * 1000; // 1 minuto

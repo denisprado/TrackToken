@@ -18,7 +18,7 @@ import { loadCurrency, saveToken } from '../utils/storage';
 import axios from 'axios';
 import { Feather } from '@expo/vector-icons';
 import { theme } from '../utils/theme';
-import { fetchTokenPrice } from '../utils/api';
+import { fetchCoins, fetchTokenPrice } from '../utils/api';
 import { Coin, CoinMarketData } from '../types/types';
 
 const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) => {
@@ -37,17 +37,15 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 	const walletId = routes && routes.walletId
 
 	useEffect(() => {
-		const fetchCoins = async () => {
+		const fetchCoinsEffect = async () => {
 			try {
-				const response = await axios.get<CoinMarketData[]>(
-					'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false'
-				);
-				setTokens(response.data.slice(0, 20).filter((coin): coin is CoinMarketData => coin.market_cap_rank <= 20) as Coin[]);
+				const response = await fetchCoins()
+				setTokens(response!);
 			} catch (error) {
 				console.error('Error fetching coins:', error);
 			}
 		};
-		fetchCoins();
+		fetchCoinsEffect();
 	}, []);
 
 	useEffect(() => {

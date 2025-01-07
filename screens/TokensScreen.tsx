@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, ActivityIndicator, Modal, TextInput, Button, ScrollView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fetchTokenPrice, fetchCurrencies, } from '../utils/api';
-import { saveToken, loadCurrency, saveCurrency, loadTokens, clearStorage } from '../utils/storage';
+import { saveToken, loadCurrency, saveCurrency, loadTokens } from '../utils/storage';
 import TokenItem from '../components/TokenItem';
 import { theme } from '../utils/theme';
 import { Feather } from '@expo/vector-icons';
@@ -49,6 +49,17 @@ const TokensScreen = ({ route }: { route: any }) => {
 		}, [])
 	);
 
+
+
+	useEffect(() => {
+		const unsubscribe = navigation.addListener('focus', () => {
+			// Chame a função para atualizar a lista de tokens aqui
+			loadInitialTokens();
+		});
+
+		return unsubscribe; // Limpa o listener ao desmontar
+	}, [navigation]);
+
 	useEffect(() => {
 		const loadInitialCurrency = async () => {
 			const savedCurrency1 = await loadCurrency("1") || DEFAULT_CURRENCY_1;
@@ -69,18 +80,18 @@ const TokensScreen = ({ route }: { route: any }) => {
 		fetchCurrenciesData();
 	}, []);
 
-	useEffect(() => {
-		const loadTokensForWallet = async () => {
-			const allTokens = await loadTokens();
-			console.log(allTokens, walletId, walletName) // Carregar todos os tokens
-			if (allTokens) {
-				const walletTokens = allTokens.filter(token => token && token?.walletId! === walletId); // Filtrar tokens pela carteira
-				setTokens(walletTokens);
-			}
-		};
+	const loadTokensForWallet = async () => {
+		const allTokens = await loadTokens();
+		console.log(allTokens, walletId, walletName) // Carregar todos os tokens
+		if (allTokens) {
+			const walletTokens = allTokens.filter(token => token && token?.walletId! === walletId); // Filtrar tokens pela carteira
+			setTokens(walletTokens);
+		}
+	};
 
+	useEffect(() => {
 		loadTokensForWallet();
-	}, [walletId]);
+	}, [walletId, tokens]);
 
 	// Funções
 	const loadInitialTokens = async () => {
@@ -91,7 +102,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 					tokens.map(async (token: TokenData) => {
 						const price = await fetchTokenPrice(token.id, currency1);
 						const totalAmount = calculateTotalAmount(token.additions);
-						const { currency1Change: percentageChange } = calculatePercentageChange(token.additions, price)
+						const { percentageChange } = calculatePercentageChange(token.additions, price)
 						return {
 							...token,
 							totalAmount,
@@ -119,11 +130,11 @@ const TokensScreen = ({ route }: { route: any }) => {
 		additions: TokenAddition[],
 		currentPriceCurrency1: number | null,
 
-	): { currency1Change: number | null } => {
+	): { percentageChange: number | null } => {
 		// Verifica se os preços atuais estão disponíveis
 		if (!currentPriceCurrency1 || additions.length === 0) {
 			console.log("Preços atuais ou adições não disponíveis.");
-			return { currency1Change: null };
+			return { percentageChange: null };
 		}
 
 		let totalInvestmentCurrency1 = 0; // Total investido para moeda 1
@@ -149,12 +160,12 @@ const TokensScreen = ({ route }: { route: any }) => {
 		// console.log(`Current Total Value Currency 1: ${currentTotalValueCurrency1}`);
 
 		// Calcula a porcentagem de mudança
-		const currency1Change = ((currentTotalValueCurrency1 - totalInvestmentCurrency1) / totalInvestmentCurrency1) * 100;
+		const percentageChange = ((currentTotalValueCurrency1 - totalInvestmentCurrency1) / totalInvestmentCurrency1) * 100;
 
 		// Logs para verificar as porcentagens calculadas
 		// console.log(`Currency 1 Change: ${currency1Change}`);
 
-		return { currency1Change };
+		return { percentageChange };
 	};
 
 	const handleOpenRedeemModal = (tokenId: string) => {
@@ -225,19 +236,19 @@ const TokensScreen = ({ route }: { route: any }) => {
 		loadInitialTokens(); // Chama a função para recarregar os tokens
 	};
 
-	const handleClearStorage = async () => {
-		await clearStorage(); // Chama a função para limpar o armazenamento
-		Alert.alert("Sucesso", "Todos os dados foram limpos."); // Exibe um alerta de sucesso
-		loadInitialTokens(); // Recarrega os tokens após a limpeza
-	};
+	// const handleClearStorage = async () => {
+	// 	await clearStorage(); // Chama a função para limpar o armazenamento
+	// 	Alert.alert("Sucesso", "Todos os dados foram limpos."); // Exibe um alerta de sucesso
+	// 	loadInitialTokens(); // Recarrega os tokens após a limpeza
+	// };
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.header}>
 				<Text style={styles.title}>{walletName}</Text>
-				<TouchableOpacity style={styles.iconButton} onPress={handleClearStorage}>
+				{/* <TouchableOpacity style={styles.iconButton} onPress={handleClearStorage}>
 					<Feather name="trash-2" size={24} color={theme.text} />
-				</TouchableOpacity>
+				</TouchableOpacity> */}
 				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddToken', { walletId: walletId })}>
 					<Feather name="plus-circle" size={24} color={theme.text} />
 				</TouchableOpacity>
