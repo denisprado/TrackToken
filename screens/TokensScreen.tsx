@@ -7,32 +7,8 @@ import TokenItem from '../components/TokenItem';
 import { theme } from '../utils/theme';
 import { Feather } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import { Currency, TokenAddition, TokenData } from '../types/types';
 // Definições de tipos
-interface TokenAddition {
-	amount: string;
-	priceAtPurchaseCurrency1: number;
-
-	timestamp: number;
-}
-
-
-
-export interface TokenData {
-	walletId: any;
-	name: string;
-	additions: TokenAddition[];
-	id: string;
-	totalAmount: number;
-	selectedCurrency1: string;
-	currentValue: number | null;
-	percentageChange: number | null;
-}
-
-interface Currency {
-	id: string;
-	symbol: string;
-	name: string;
-}
 
 const TokensScreen = ({ route }: { route: any }) => {
 	// Constantes
@@ -95,7 +71,8 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 	useEffect(() => {
 		const loadTokensForWallet = async () => {
-			const allTokens = await loadTokens(); // Carregar todos os tokens
+			const allTokens = await loadTokens();
+			console.log(allTokens, walletId, walletName) // Carregar todos os tokens
 			if (allTokens) {
 				const walletTokens = allTokens.filter(token => token && token?.walletId! === walletId); // Filtrar tokens pela carteira
 				setTokens(walletTokens);
@@ -109,7 +86,6 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const loadInitialTokens = async () => {
 		setLoading(true);
 		try {
-
 			if (tokens) {
 				const tokensWithPrice = await Promise.all(
 					tokens.map(async (token: TokenData) => {
@@ -136,7 +112,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 	};
 
 	const calculateTotalAmount = (additions: TokenAddition[]) => {
-		return additions.reduce((sum, addition) => sum + parseFloat(addition.amount), 0);
+		return additions.reduce((sum, addition) => sum + addition.amount, 0);
 	};
 
 	const calculatePercentageChange = (
@@ -155,9 +131,9 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 		// Itera sobre as adições para calcular o total investido e a quantidade total
 		additions.forEach((addition) => {
-			const amount = parseFloat(addition.amount);
+			const amount = addition.amount;
 			totalAmount += amount; // Soma a quantidade total
-			totalInvestmentCurrency1 += amount * addition.priceAtPurchaseCurrency1; // Usa o preço no momento da compra para moeda 1
+			totalInvestmentCurrency1 += amount * addition.priceAtPurchaseCurrency1!; // Usa o preço no momento da compra para moeda 1
 
 			// // Logs para debugar
 			// console.log(`Adição: ${JSON.stringify(addition)}`);
@@ -210,7 +186,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 			await saveToken({
 				id: selectedTokenId,
 				name: tokens.find(token => token.id === selectedTokenId)?.name || '',
-				amount: String(-amount),
+				amount: -amount,
 				priceCurrency1: currentPrice1,
 				selectedCurrency1: currency1,
 				walletId: walletId,
@@ -262,7 +238,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 				<TouchableOpacity style={styles.iconButton} onPress={handleClearStorage}>
 					<Feather name="trash-2" size={24} color={theme.text} />
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddToken')}>
+				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddToken', { walletId: walletId })}>
 					<Feather name="plus-circle" size={24} color={theme.text} />
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('SwapToken')}>

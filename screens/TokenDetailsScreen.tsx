@@ -7,21 +7,8 @@ import { RootStackParamList } from '../types/navigation';
 import TokenAdditionItem from '../components/TokenAdditionItem';
 import { Feather } from '@expo/vector-icons';
 import { fetchTokenPrice } from '../utils/api';
+import { Token, TokenAddition } from '../types/types';
 
-
-interface TokenAddition {
-	amount: string;
-	timestamp: number;
-	price: number | null;
-	currency1PercentageChange: number | null
-}
-
-interface Token {
-	id: string;
-	name: string;
-	additions: TokenAddition[];
-	selectedCurrency1: string;
-}
 
 
 const TokenDetailsScreen = () => {
@@ -45,19 +32,24 @@ const TokenDetailsScreen = () => {
 				const tokenDetails = savedTokens.find(token => token.id === tokenId);
 				if (tokenDetails) {
 					const tokenWithPrice = await Promise.all(
-						tokenDetails.additions.map(async (addition) => {
-							const currentPrice1 = await fetchTokenPrice(tokenDetails.id, tokenDetails.selectedCurrency1);
-							const currency1PercentageChange = currentPrice1 ? (((currentPrice1 - (addition.amount > "0" ? currentPrice1 : 0)) / (addition.amount > "0" ? currentPrice1 : 0)) * 100) : null;
+						tokenDetails.additions.map(async (addition: TokenAddition) => {
+							const currentValue = await fetchTokenPrice(tokenDetails.id, tokenDetails.selectedCurrency1);
+
+							const percentageChange = currentValue ? (((currentValue - (addition.amount > 0 ? currentValue : 0)) / (addition.amount > 0 ? currentValue : 0)) * 100) : null;
+
+							const timestamp = addition.timestamp
 
 							return {
 								...addition,
-								currency1PercentageChange,
-								price: currentPrice1
+								timestamp,
+								percentageChange,
+								currentValue
 							};
 						})
 					);
 					setToken({
 						...tokenDetails,
+
 						additions: tokenWithPrice
 					});
 				}
@@ -103,13 +95,13 @@ const TokenDetailsScreen = () => {
 			await saveToken({
 				id: tokenId,
 				name: token?.name || '',
-				amount: String(-amount),
+				amount: -amount,
 				priceCurrency1: currentPrice1,
 				selectedCurrency1: token!.selectedCurrency1,
 				totalAmount: 0,
 				percentageChange: null,
 				currentValue: null,
-				walletId: undefined
+				walletId: ''
 			});
 			loadTokenDetails();
 			handleCloseRedeemModal();

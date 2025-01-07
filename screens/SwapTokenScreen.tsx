@@ -1,43 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { Feather } from '@expo/vector-icons';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+	Alert,
+	Button,
+	FlatList,
+	Modal,
+	ScrollView,
 	StyleSheet,
 	Text,
-	View,
 	TextInput,
-	Button,
-	Alert,
-	ScrollView,
-	Modal,
 	TouchableOpacity,
-	FlatList
+	View
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { theme } from '../utils/theme';
-import { fetchTokenPrice, fetchCoins } from '../utils/api';
-import { loadCurrency, saveToken } from '../utils/storage';
-import { Feather } from '@expo/vector-icons';
 import { RootStackParamList } from '../types/navigation';
-import { Picker } from '@react-native-picker/picker';
-
-
-interface Coin {
-	id: string;
-	name: string;
-	symbol: string;
-	market_cap_rank: number;
-}
-
-interface TokenAddition {
-	amount: string;
-	timestamp: number;
-}
-
-interface Token {
-	id: string;
-	name: string;
-	additions: TokenAddition[];
-	selectedCurrency1: string;
-}
+import { Coin } from '../types/types';
+import { fetchCoins, fetchTokenPrice } from '../utils/api';
+import { loadCurrency, saveToken } from '../utils/storage';
+import { theme } from '../utils/theme';
 
 const SwapTokenScreen = () => {
 	const navigation = useNavigation<import('@react-navigation/native').NavigationProp<RootStackParamList>>();
@@ -143,24 +123,24 @@ const SwapTokenScreen = () => {
 							await saveToken({
 								id: fromToken.id,
 								name: fromToken.name,
-								amount: String(-parsedFromAmount),
+								amount: -parsedFromAmount,
 								selectedCurrency1: currency1!,
 								totalAmount: 0,
 								percentageChange: null,
 								currentValue: null,
-								walletId: undefined
+								walletId: ''
 							});
 							// Add to toToken
 							await saveToken({
 								id: toToken.id,
 								name: toToken.name,
-								amount: String(parsedToAmount),
+								amount: parsedToAmount,
 								priceCurrency1: toPrice1,
 								selectedCurrency1: currency1!,
 								totalAmount: 0,
 								percentageChange: null,
 								currentValue: null,
-								walletId: undefined
+								walletId: ''
 							});
 							navigation.goBack();
 						} catch (error) {

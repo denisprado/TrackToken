@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
-import { saveWallet } from '../utils/storage'; // Função para salvar carteiras
+import { fetchWallets, saveWallet } from '../utils/storage'; // Função para salvar carteiras
 
 const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 	const [walletName, setWalletName] = useState('');
@@ -19,6 +19,7 @@ const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 
 		try {
 			await saveWallet(newWallet); // Salvar a nova carteira
+			fetchWallets();
 			navigation.goBack(); // Voltar para a tela anterior
 		} catch (error) {
 			Alert.alert('Erro', 'Falha ao criar a carteira.');
