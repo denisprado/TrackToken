@@ -1,25 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
+	Alert,
+	Button,
+	FlatList,
+	KeyboardAvoidingView,
+	Modal,
+	Platform,
+	ScrollView,
 	StyleSheet,
 	Text,
-	View,
 	TextInput,
-	Button,
-	Alert,
-	Modal,
 	TouchableOpacity,
-	FlatList,
-	Platform,
-	KeyboardAvoidingView,
-	ScrollView,
+	View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { loadCurrency, saveToken } from '../utils/storage';
-import axios from 'axios';
-import { Feather } from '@expo/vector-icons';
-import { theme } from '../utils/theme';
+import { Coin } from '../types/types';
 import { fetchCoins, fetchTokenPrice } from '../utils/api';
-import { Coin, CoinMarketData } from '../types/types';
+import { loadCurrency, saveToken } from '../utils/storage';
+import { theme } from '../utils/theme';
 
 const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) => {
 	const navigation = useNavigation();
@@ -113,7 +112,7 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 
 		const amount = tokenAmount;
 		const currentValue = currentTokenValue;
-
+		console.log("waller", walletId)
 		if (isNaN(amount) || isNaN(currentValue)) {
 			Alert.alert('Error', 'Invalid amount or current value.');
 			return;

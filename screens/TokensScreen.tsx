@@ -91,9 +91,12 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 	const loadTokensForWallet = async () => {
 		const allTokens = await loadTokens();
-		console.log(allTokens, walletId, walletName) // Carregar todos os tokens
+		console.log("allTokens", allTokens?.map(token => token.walletId)) // Carregar todos os tokens
+		console.log(walletId) // Carregar todos os tokens
+		console.log(walletName) // Carregar todos os tokens
 		if (allTokens) {
 			const walletTokens = allTokens.filter(token => token && token?.walletId! === walletId); // Filtrar tokens pela carteira
+			console.log("walletTokens", walletTokens) // Carregar todos os tokens
 			setTokens(walletTokens);
 		}
 	};
