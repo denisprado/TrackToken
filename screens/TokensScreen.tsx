@@ -39,7 +39,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 	useFocusEffect(
 		React.useCallback(() => {
 			loadInitialTokens();
-			updateInterval.current = setInterval(loadInitialTokens, 60000); // Atualiza a cada 1 minuto
+			updateInterval.current = setInterval(loadInitialTokens, 600000);
 
 			return () => {
 				if (updateInterval.current) {
@@ -49,7 +49,14 @@ const TokensScreen = ({ route }: { route: any }) => {
 		}, [])
 	);
 
+	useEffect(() => {
+		const unsubscribe = navigation.addListener('focus', () => {
+			// Chame a função para atualizar a lista de tokens aqui
+			loadInitialTokens();
+		});
 
+		return unsubscribe; // Limpa o listener ao desmontar
+	}, [navigation]);
 
 	useEffect(() => {
 		const unsubscribe = navigation.addListener('focus', () => {
@@ -80,6 +87,8 @@ const TokensScreen = ({ route }: { route: any }) => {
 		fetchCurrenciesData();
 	}, []);
 
+	// Funções
+
 	const loadTokensForWallet = async () => {
 		const allTokens = await loadTokens();
 		console.log(allTokens, walletId, walletName) // Carregar todos os tokens
@@ -89,11 +98,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 		}
 	};
 
-	useEffect(() => {
-		loadTokensForWallet();
-	}, [walletId, tokens]);
 
-	// Funções
 	const loadInitialTokens = async () => {
 		setLoading(true);
 		try {
@@ -112,6 +117,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 					})
 				);
 				setTokens(tokensWithPrice);
+				loadTokensForWallet();
 			} else {
 				setTokens([]); // Se não houver tokens, define a lista como vazia
 			}
@@ -252,8 +258,8 @@ const TokensScreen = ({ route }: { route: any }) => {
 				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddToken', { walletId: walletId })}>
 					<Feather name="plus-circle" size={24} color={theme.text} />
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('SwapToken')}>
-					<Feather name="repeat" size={24} color={theme.text} />
+				<TouchableOpacity style={styles.iconButton} onPress={() => loadInitialTokens()}>
+					<Feather name="refresh-ccw" size={24} color={theme.text} />
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.iconButton} onPress={handleOpenSettingsModal}>
 					<Feather name="settings" size={24} color={theme.text} />
