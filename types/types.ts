@@ -9,7 +9,7 @@ export interface Token {
   id: string;
   name: string;
   additions: TokenAddition[];
-  selectedCurrency1: string;
+  selectedCurrency1: Coin;
   walletId: string;
 }
 
@@ -18,7 +18,7 @@ export interface TokenData {
   additions: TokenAddition[];
   id: string;
   totalAmount: number;
-  selectedCurrency1: string;
+  selectedCurrency1: Coin;
   currentValue: number | null;
   percentageChange: number | null;
   walletId: string;
@@ -28,6 +28,7 @@ export interface Coin {
   id: string;
   name: string;
   symbol: string;
+  image: string;
   market_cap_rank: number;
 }
 

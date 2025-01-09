@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, ActivityIndicator, Modal, TextInput, Button, ScrollView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { fetchTokenPrice, fetchCurrencies, } from '../utils/api';
-import { saveToken, loadCurrency, saveCurrency, loadTokens } from '../utils/storage';
+import { fetchTokenPrice, fetchCoins, } from '../utils/api';
+import { saveToken, loadCurrency, saveCurrency, loadTokens, CURRENCY } from '../utils/storage';
 import TokenItem from '../components/TokenItem';
 import { theme } from '../utils/theme';
 import { Feather } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import { Currency, TokenAddition, TokenData } from '../types/types';
+import { Coin, TokenAddition, TokenData } from '../types/types';
 // Definições de tipos
 
-const TokensScreen = ({ route }: { route: any }) => {
+const TokensScreen = async ({ route }: { route: any }) => {
 	// Constantes
-	const DEFAULT_CURRENCY_1 = "USDC";
+	const DEFAULT_CURRENCY_1 = await loadCurrency();
 
 	// Estado
 	const navigation = useNavigation();
@@ -26,20 +26,20 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const [redeemAmount, setRedeemAmount] = useState('');
 	const updateInterval = useRef<any>(null);
 	const [currency1, setCurrency1] = useState(DEFAULT_CURRENCY_1);
-	const [currencies, setCurrencies] = useState<Currency[]>([]);
+	const [currencies, setCurrencies] = useState<Coin[]>([]);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState(DEFAULT_CURRENCY_1);
 	const [isPrimaryPickerVisible, setIsPrimaryPickerVisible] = useState(false);
 	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 
 	// Efeitos
 	useEffect(() => {
-		loadInitialTokens();
+		loadTokensForWallet();
 	}, [currency1]);
 
 	useFocusEffect(
 		React.useCallback(() => {
-			loadInitialTokens();
-			updateInterval.current = setInterval(loadInitialTokens, 600000);
+			loadTokensForWallet();
+			updateInterval.current = setInterval(loadTokensForWallet, 600000);
 
 			return () => {
 				if (updateInterval.current) {
@@ -52,7 +52,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 	useEffect(() => {
 		const unsubscribe = navigation.addListener('focus', () => {
 			// Chame a função para atualizar a lista de tokens aqui
-			loadInitialTokens();
+			loadTokensForWallet();
 		});
 
 		return unsubscribe; // Limpa o listener ao desmontar
@@ -61,7 +61,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 	useEffect(() => {
 		const unsubscribe = navigation.addListener('focus', () => {
 			// Chame a função para atualizar a lista de tokens aqui
-			loadInitialTokens();
+			loadTokensForWallet();
 		});
 
 		return unsubscribe; // Limpa o listener ao desmontar
@@ -69,15 +69,13 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 	useEffect(() => {
 		const loadInitialCurrency = async () => {
-			const savedCurrency1 = await loadCurrency("1") || DEFAULT_CURRENCY_1;
-
+			const savedCurrency1 = await loadCurrency() || DEFAULT_CURRENCY_1;
 			setCurrency1(savedCurrency1);
-
 		};
 
 
 		const fetchCurrenciesData = async () => {
-			const data = await fetchCurrencies();
+			const data = await fetchCoins();
 			if (data) {
 				setCurrencies(data);
 			}
@@ -91,47 +89,41 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 	const loadTokensForWallet = async () => {
 		const allTokens = await loadTokens();
-		console.log("allTokens", allTokens?.map(token => token.walletId)) // Carregar todos os tokens
-		console.log(walletId) // Carregar todos os tokens
-		console.log(walletName) // Carregar todos os tokens
-		if (allTokens) {
-			const walletTokens = allTokens.filter(token => token && token?.walletId! === walletId); // Filtrar tokens pela carteira
-			console.log("walletTokens", walletTokens) // Carregar todos os tokens
-			setTokens(walletTokens);
-		}
-	};
-
-
-	const loadInitialTokens = async () => {
-		setLoading(true);
+		console.log("allTokenssss", allTokens?.map(token => token.additions)) // Carregar todos os tokens
 		try {
-			if (tokens) {
+			if (allTokens) {
 				const tokensWithPrice = await Promise.all(
-					tokens.map(async (token: TokenData) => {
-						const price = await fetchTokenPrice(token.id, currency1);
+					allTokens.map(async (token: TokenData) => {
+						const price = await fetchTokenPrice(token.id, currency1!);
 						const totalAmount = calculateTotalAmount(token.additions);
+						const currency = currency1 ? currency1 : CURRENCY;
 						const { percentageChange } = calculatePercentageChange(token.additions, price)
 						return {
 							...token,
-							totalAmount,
+							totalAmount: totalAmount,
 							currentValue: price ? totalAmount * price : null,
-							percentageChange
+							percentageChange,
+							selectedCurrency1: currency
 						};
 					})
-				);
-				setTokens(tokensWithPrice);
-				loadTokensForWallet();
+				)
+
+				const walletTokens = tokensWithPrice.filter(token => token && token?.walletId! === walletId); // Filtrar tokens pela carteira
+				console.log("walletTokens", walletTokens) // Carregar todos os tokens
+				setTokens(walletTokens);
 			} else {
 				setTokens([]); // Se não houver tokens, define a lista como vazia
 			}
+
 		} catch (error) {
 			console.error('Erro ao carregar tokens', error);
 		} finally {
 			setLoading(false);
 		}
-	};
+	}
 
 	const calculateTotalAmount = (additions: TokenAddition[]) => {
+		console.log("calculateTotalAmount", additions.reduce((sum, addition) => sum + addition.amount, 0))
 		return additions.reduce((sum, addition) => sum + addition.amount, 0);
 	};
 
@@ -200,7 +192,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 				return;
 			}
 
-			const currentPrice1 = await fetchTokenPrice(selectedTokenId, currency1);
+			const currentPrice1 = await fetchTokenPrice(selectedTokenId, currency1 || CURRENCY);
 
 
 			await saveToken({
@@ -208,13 +200,13 @@ const TokensScreen = ({ route }: { route: any }) => {
 				name: tokens.find(token => token.id === selectedTokenId)?.name || '',
 				amount: -amount,
 				priceCurrency1: currentPrice1,
-				selectedCurrency1: currency1,
+				selectedCurrency1: currency1 || CURRENCY,
 				walletId: walletId,
 				totalAmount: 0,
 				currentValue: null,
 				percentageChange: null
 			});
-			loadInitialTokens();
+			loadTokensForWallet();
 			handleCloseRedeemModal();
 		} catch (error) {
 			console.error('Error removing token: ', error);
@@ -236,13 +228,11 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 	const handleConfirmCurrencySelection = async () => {
 		setCurrency1(tempPrimaryCurrency);
-
-		await saveCurrency("1", tempPrimaryCurrency!); // Salva a moeda primária
-
+		await saveCurrency(tempPrimaryCurrency!); // Salva a moeda primária
 		handleCloseSettingsModal(); // Fecha o modal
 
 		// Recarrega os tokens após a seleção das moedas
-		loadInitialTokens(); // Chama a função para recarregar os tokens
+		loadTokensForWallet(); // Chama a função para recarregar os tokens
 	};
 
 	// const handleClearStorage = async () => {
@@ -261,7 +251,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddToken', { walletId: walletId })}>
 					<Feather name="plus-circle" size={24} color={theme.text} />
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.iconButton} onPress={() => loadInitialTokens()}>
+				<TouchableOpacity style={styles.iconButton} onPress={() => loadTokensForWallet()}>
 					<Feather name="refresh-ccw" size={24} color={theme.text} />
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.iconButton} onPress={handleOpenSettingsModal}>
@@ -280,17 +270,16 @@ const TokensScreen = ({ route }: { route: any }) => {
 					renderItem={({ item }) => (
 						<TokenItem
 							name={item.name}
-							totalAmount={item.totalAmount}
+							totalAmount={item.totalAmount.toString()}
 							currency1Value={item.currentValue}
 							onRedeem={() => handleOpenRedeemModal(item.id)}
 							onPress={() => handleTokenPress(item.id)}
 							currency1PercentageChange={item.percentageChange}
 							selectedCurrency1={item.selectedCurrency1}
-
 						/>
 					)}
 					style={styles.listStyle}
-					onRefresh={loadInitialTokens}
+					onRefresh={loadTokensForWallet}
 					refreshing={loading}
 				/>
 			)}
@@ -336,7 +325,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 						<ScrollView>
 							<Text style={styles.label}>Select currency</Text>
 							<TouchableOpacity onPress={() => { setIsPrimaryPickerVisible(true); }}>
-								<Text style={styles.selectText}>{tempPrimaryCurrency}</Text>
+								<Text style={styles.selectText}>{tempPrimaryCurrency?.name}</Text>
 							</TouchableOpacity>
 							{isPrimaryPickerVisible && (
 								<Picker

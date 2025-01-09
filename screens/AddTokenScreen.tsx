@@ -20,17 +20,20 @@ import { fetchCoins, fetchTokenPrice } from '../utils/api';
 import { loadCurrency, saveToken } from '../utils/storage';
 import { theme } from '../utils/theme';
 
-const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) => {
+const AddTokenScreen = async ({ route }: { route: { params: { walletId: string } } }) => {
+
+	const DEFAULT_CURRENCY_1 = await loadCurrency();
+
 	const navigation = useNavigation();
 	const [tokens, setTokens] = useState<Coin[]>([]);
 	const [selectedToken, setSelectedToken] = useState<Coin | null>(null);
-	const [tokenAmount, setTokenAmount] = useState(0);
+	const [tokenAmount, setTokenAmount] = useState<string>('');
 	const [modalVisible, setModalVisible] = useState(false);
 	const [searchText, setSearchText] = useState('');
 	const [filteredTokens, setFilteredTokens] = useState<Coin[]>([]);
 	const [currentTokenValue, setCurrentTokenValue] = useState<number>(0);
 	const [totalValueReceived, setTotalValueReceived] = useState<number>(0);
-	const [currency1, setCurrency1] = useState<string>('');
+	const [currency1, setCurrency1] = useState<Coin>(DEFAULT_CURRENCY_1!);
 	const [isEditing, setIsEditing] = useState<boolean>(false);
 	const routes = route.params; // Obter o ID da carteira
 	const walletId = routes && routes.walletId
@@ -49,8 +52,8 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 
 	useEffect(() => {
 		const fetchCurrencies = async () => {
-			const currency1Value = await loadCurrency('1');
-			setCurrency1(currency1Value ?? '');
+			const currency1Value = await loadCurrency();
+			setCurrency1(currency1Value!);
 		};
 
 		fetchCurrencies();
@@ -80,15 +83,25 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 		fetchTokenValue();
 	}, [selectedToken, currency1]);
 
-	const handleTokenAmountChange = (value: number) => {
+	const handleTokenAmountChange = (value: string) => {
+		const sanitizedValue = value.replace(',', '.');
+		const parsedValue = parseFloat(sanitizedValue);
 
-		setTokenAmount(value);
-		updateTotalValueReceived(value);
+		if (!isNaN(parsedValue) || sanitizedValue === '') {
+			setTokenAmount(sanitizedValue);
+			if (!isNaN(parsedValue)) {
+				updateTotalValueReceived(parsedValue);
+			} else {
+				updateTotalValueReceived(0);
+			}
+		} else {
+			setTokenAmount('');
+		}
 	};
 
 	const handleCurrentTokenValueChange = (number: number) => {
 		setCurrentTokenValue(number);
-		updateTotalValueReceived(tokenAmount);
+		updateTotalValueReceived(parseFloat(tokenAmount));
 	};
 
 	const updateTotalValueReceived = (amount: number) => {
@@ -110,7 +123,7 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 			return;
 		}
 
-		const amount = tokenAmount;
+		const amount = parseFloat(tokenAmount.replace(',', '.'));
 		const currentValue = currentTokenValue;
 		console.log("waller", walletId)
 		if (isNaN(amount) || isNaN(currentValue)) {
@@ -183,8 +196,8 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 						<TextInput
 							style={[styles.input, { color: theme.text }]}
 							keyboardType="numeric"
-							value={tokenAmount.toString()}
-							onChangeText={(text) => handleTokenAmountChange(Number(text))}
+							value={tokenAmount}
+							onChangeText={handleTokenAmountChange}
 							placeholder="Enter amount"
 							placeholderTextColor={theme.secondaryText}
 							selectionColor={theme.secondaryText}
@@ -193,7 +206,7 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 
 					{/* Valor Atual do Token */}
 					<View style={styles.inputContainer}>
-						<Text style={styles.label}>Current Value in {currency1}:</Text>
+						<Text style={styles.label}>Current Value in {currency1.name}:</Text>
 						<View style={{ flexDirection: 'row', alignItems: 'center' }}>
 							<TextInput
 								style={[styles.input, { color: theme.text, flex: 1 }]}
@@ -213,7 +226,7 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 
 					{/* Valor Total Recebido */}
 					<View style={styles.inputContainer}>
-						<Text style={styles.label}>Total Value Received in {currency1}:</Text>
+						<Text style={styles.label}>Total Value Received in {currency1.name}:</Text>
 						<Text style={styles.value}>{totalValueReceived}</Text>
 					</View>
 

@@ -87,7 +87,7 @@ const TokenDetailsScreen = () => {
 				return;
 			}
 
-			const currency1 = await loadCurrency('1')
+			const currency1 = await loadCurrency()
 			const currentPrice1 = await fetchTokenPrice(tokenId, currency1!);
 
 			console.log("Preço atual da moeda 1:", currentPrice1);

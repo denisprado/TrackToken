@@ -19,20 +19,21 @@ import { fetchCoins, fetchTokenPrice } from '../utils/api';
 import { loadCurrency, saveToken } from '../utils/storage';
 import { theme } from '../utils/theme';
 
-const SwapTokenScreen = () => {
+const SwapTokenScreen = async () => {
+	const DEFAULT_CURRENCY_1 = await loadCurrency();
 	const navigation = useNavigation<import('@react-navigation/native').NavigationProp<RootStackParamList>>();
 	const route = useRoute();
 	const { tokenId, totalAmount } = route.params as { tokenId?: string, totalAmount?: number };
 	const [tokens, setTokens] = useState<Coin[]>([]);
 	const [fromToken, setFromToken] = useState<Coin | null>(null);
 	const [toToken, setToToken] = useState<Coin | null>(null);
-	const [fromAmount, setFromAmount] = useState('');
-	const [toAmount, setToAmount] = useState('');
+	const [fromAmount, setFromAmount] = useState<string>('');
+	const [toAmount, setToAmount] = useState<string>('');
 	const [isCalculating, setIsCalculating] = useState(false);
 	const debounceTimer = useRef<any>(null);
 	const [fromModalVisible, setFromModalVisible] = useState(false);
 	const [toModalVisible, setToModalVisible] = useState(false);
-	const [currency, setCurrency] = useState('usd');
+	const [currency, setCurrency] = useState(DEFAULT_CURRENCY_1);
 
 	useEffect(() => {
 		const fetchTokens = async () => {
@@ -59,8 +60,8 @@ const SwapTokenScreen = () => {
 			}
 			setIsCalculating(true);
 			try {
-				const fromPrice = await fetchTokenPrice(fromToken.id, currency);
-				const toPrice = await fetchTokenPrice(toToken.id, currency);
+				const fromPrice = await fetchTokenPrice(fromToken.id, currency!);
+				const toPrice = await fetchTokenPrice(toToken.id, currency!);
 				if (fromPrice && toPrice) {
 					const amount = parseFloat(fromAmount.replace(',', '.'));
 					if (isNaN(amount)) {
@@ -68,7 +69,7 @@ const SwapTokenScreen = () => {
 						return;
 					}
 					const calculatedAmount = (amount * fromPrice) / toPrice;
-					setToAmount(calculatedAmount.toFixed(6));
+					setToAmount(calculatedAmount.toFixed(6).toString());
 				}
 				else {
 					setToAmount('');
@@ -115,7 +116,7 @@ const SwapTokenScreen = () => {
 					text: 'Swap',
 					onPress: async () => {
 						setIsCalculating(true);
-						const currency1 = await loadCurrency('1');
+						const currency1 = await loadCurrency();
 						const parsedToAmount = parseFloat(toAmount);
 						try {
 							const toPrice1 = await fetchTokenPrice(toToken.id, currency1!);

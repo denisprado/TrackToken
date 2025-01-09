@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CachedPrice, Coin, Currency } from "../types/types";
+import { CachedPrice, Coin, CoinMarketData, Currency } from "../types/types";
 
 const priceCache: { [tokenId: string]: CachedPrice } = {};
 const CACHE_EXPIRY_TIME = 60 * 1000; // 1 minuto
@@ -53,7 +53,7 @@ export const fetchCurrencies = async (): Promise<Currency[] | null> => {
 
 export const fetchTokenPrice = async (
   tokenId: string,
-  currency: string
+  currency: Coin
 ): Promise<number | null> => {
   // Verifica se o preço do token já está em cache e se não expirou
   if (
@@ -67,7 +67,7 @@ export const fetchTokenPrice = async (
   try {
     // Faz uma requisição GET para a API do CoinGecko para obter o preço atual do token
     const response = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=${currency}&x_cg_demo_api_key=${API_KEY}`
+      `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=${currency.symbol}&x_cg_demo_api_key=${API_KEY}`
     );
 
     const priceData = response.data; // Armazena os dados da resposta
@@ -76,9 +76,9 @@ export const fetchTokenPrice = async (
     if (
       priceData &&
       priceData[tokenId] &&
-      priceData[tokenId][currency.toLowerCase()]
+      priceData[tokenId][currency.symbol.toLowerCase()]
     ) {
-      const price = priceData[tokenId][currency.toLowerCase()]; // Obtém o preço do token na moeda especificada
+      const price = priceData[tokenId][currency.symbol.toLowerCase()]; // Obtém o preço do token na moeda especificada
 
       // Salva o preço e a hora da última busca no cache
       priceCache[tokenId] = { value: price, lastFetched: Date.now() };

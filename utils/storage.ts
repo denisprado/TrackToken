@@ -1,9 +1,16 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Importa o AsyncStorage para armazenamento local
-import { TokenAddition, TokenData, Wallet } from "../types/types";
+import { Coin, TokenAddition, TokenData, Wallet } from "../types/types";
 
 const STORAGE_KEY = "token_data"; // Chave para armazenar os dados dos tokens
 const CURRENCY_KEY = "selected_currency"; // Chave para armazenar a moeda selecionada
-const CURRENCY = ["usdc", "brl"]; // Lista de moedas suportadas
+export const CURRENCY: Coin = {
+  id: "usd-coin",
+  symbol: "usdc",
+  name: "USDC",
+  image:
+    "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
+  market_cap_rank: 8,
+}; // Lista de moedas suportadas
 
 // Função para salvar um token no armazenamento
 // Função para salvar um token no armazenamento
@@ -11,7 +18,6 @@ export const saveToken = async (
   token: Omit<TokenData, "additions"> & {
     amount: number; // Quantidade a ser adicionada
     priceCurrency1?: number | null; // Preço da moeda 1 (opcional)
-    selectedCurrency1: string; // Moeda selecionada 1
     walletId: string;
   }
 ) => {
@@ -105,24 +111,24 @@ export const removeToken = async (tokenId: string) => {
 };
 
 // Função para salvar a moeda selecionada no armazenamento
-export const saveCurrency = async (id: string, currency: string) => {
+export const saveCurrency = async (currency: Coin) => {
   try {
-    await AsyncStorage.setItem(CURRENCY_KEY + id, currency); // Salva a moeda com a chave correspondente
+    await AsyncStorage.setItem(CURRENCY_KEY, JSON.stringify(currency)); // Salva a moeda com a chave correspondente
   } catch (error) {
     console.error("Erro ao salvar a moeda", error); // Loga o erro em caso de falha
   }
 };
 
 // Função para carregar a moeda selecionada do armazenamento
-export const loadCurrency = async (id: string): Promise<string | null> => {
+export const loadCurrency = async (): Promise<Coin | null> => {
   try {
-    const idNumber = parseInt(id, 10) - 1; // Converte o ID para número e ajusta
-    const currency = await AsyncStorage.getItem(CURRENCY_KEY + id); // Obtém a moeda do armazenamento
+    const currency = await AsyncStorage.getItem(CURRENCY_KEY); // Obtém a moeda do armazenamento
     if (!currency) {
-      await saveCurrency(id, CURRENCY[idNumber]); // Salva a moeda padrão se não existir
-      return CURRENCY[idNumber]; // Retorna a moeda padrão
+      await saveCurrency(CURRENCY); // Salva a moeda padrão se não existir
+      const currency = await AsyncStorage.getItem(CURRENCY_KEY); // Obtém a
+      return JSON.parse(currency!); // Retorna a moeda padrão
     }
-    return currency; // Retorna a moeda existente
+    return JSON.parse(currency); // Retorna a moeda existente
   } catch (error) {
     console.error("Error loading currency:", error); // Loga o erro em caso de falha
     return null; // Retorna null em caso de erro
