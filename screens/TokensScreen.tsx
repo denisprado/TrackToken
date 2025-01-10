@@ -63,7 +63,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 	}, [navigation]);
 
 	const findCurrencyBySymbol = (symbolToFind: string) => {
-		const currency = currencies.find(({ symbol }) => symbol === symbolToFind)
+		const currency = currencies.find(({ symbol }) => symbol === symbolToFind) || null
 		return currency
 	}
 
@@ -95,6 +95,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 			if (allTokens) {
 				const tokensWithPrice = await Promise.all(
 					allTokens.map(async (token: TokenData) => {
+						console.log(currency)
 						const price = await fetchTokenPrice(token.id, currency!);
 						const totalAmount = calculateTotalAmount(token.additions);
 
