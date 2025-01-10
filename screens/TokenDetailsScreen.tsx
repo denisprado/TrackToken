@@ -72,6 +72,11 @@ const TokenDetailsScreen = () => {
 		setRedeemAmount('');
 	};
 
+	const findCurrencyBySymbol = async (symbolToFind: string) => {
+		const currencies = await fetchCurrencies();
+		const currency = currencies!.find(({ symbol }) => symbol === symbolToFind)
+		return currency
+	}
 
 	const handleRedeemToken = async () => {
 		if (!tokenId || !redeemAmount) {
@@ -87,11 +92,7 @@ const TokenDetailsScreen = () => {
 				return;
 			}
 
-			const findCurrencyBySymbol = async (symbolToFind: string) => {
-				const currencies = await fetchCurrencies();
-				const currency = currencies!.find(({ symbol }) => symbol === symbolToFind)
-				return currency
-			}
+
 
 			const currencySaved = await loadCurrency()
 			const currency = await findCurrencyBySymbol(currencySaved!)
@@ -106,7 +107,8 @@ const TokenDetailsScreen = () => {
 				totalAmount: 0,
 				percentageChange: null,
 				currentValue: null,
-				walletId: ''
+				walletId: '',
+				percentageOfWallet: 0
 			});
 			loadTokenDetails();
 			handleCloseRedeemModal();

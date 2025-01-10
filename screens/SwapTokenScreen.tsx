@@ -138,7 +138,8 @@ const SwapTokenScreen = () => {
 								totalAmount: 0,
 								percentageChange: null,
 								currentValue: null,
-								walletId: ''
+								walletId: '',
+								percentageOfWallet: 0
 							});
 							// Add to toToken
 							await saveToken({
@@ -150,7 +151,8 @@ const SwapTokenScreen = () => {
 								totalAmount: 0,
 								percentageChange: null,
 								currentValue: null,
-								walletId: ''
+								walletId: '',
+								percentageOfWallet: 0
 							});
 							navigation.goBack();
 						} catch (error) {

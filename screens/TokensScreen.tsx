@@ -95,11 +95,11 @@ const TokensScreen = ({ route }: { route: any }) => {
 			if (allTokens) {
 				const tokensWithPrice = await Promise.all(
 					allTokens.map(async (token: TokenData) => {
-						console.log(currency)
+
 						const price = await fetchTokenPrice(token.id, currency!);
 						const totalAmount = calculateTotalAmount(token.additions);
-
 						const { percentageChange } = calculatePercentageChange(token.additions, price)
+
 						return {
 							...token,
 							totalAmount: totalAmount,
@@ -112,7 +112,16 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 				const walletTokens = tokensWithPrice.filter(token => token && token?.walletId! === walletId); // Filtrar tokens pela carteira
 
-				setTokens(walletTokens);
+				// Calcular o valor total da carteira
+				const totalWalletValue = walletTokens.reduce((sum, token) => sum + (token.currentValue || 0), 0);
+
+				// Calcular a porcentagem que cada token representa do total da carteira
+				const tokensWithPercentage = walletTokens.map(token => ({
+					...token,
+					percentageOfWallet: token.currentValue ? (token.currentValue / totalWalletValue) * 100 : 0,
+				}));
+
+				setTokens(tokensWithPercentage);
 			} else {
 				setTokens([]); // Se não houver tokens, define a lista como vazia
 			}
@@ -212,6 +221,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.iconButton} onPress={handleOpenSettingsModal}>
 					<Feather name="settings" size={24} color={theme.text} />
+					<Text style={styles.label}>({currency?.symbol.toUpperCase()})</Text>
 				</TouchableOpacity>
 			</View>
 
@@ -231,6 +241,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 							currencyPercentageChange={item.percentageChange}
 							currencyTotalAmount={item.currentValue}
 							currency={currency}
+							percentageOfWallet={item.percentageOfWallet}
 						/>
 					)}
 					style={styles.listStyle}
@@ -298,6 +309,9 @@ const styles = StyleSheet.create({
 		flex: 1
 	},
 	iconButton: {
+		display: 'flex',
+		flexDirection: 'row',
+		gap: 10,
 		padding: 5,
 	},
 	loadingContainer: {

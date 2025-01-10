@@ -9,6 +9,7 @@ import { loadCurrency } from '../utils/storage';
 interface TokenItemProps {
 	tokenCoin: Coin;
 	totalAmount: string;
+	percentageOfWallet: number;
 	currencyTotalAmount: number | null;
 	currencyPercentageChange: number | null;
 	currency: Currency | null;
@@ -19,13 +20,19 @@ interface TokenItemProps {
 const TokenItem: React.FC<TokenItemProps> = ({
 	tokenCoin,
 	totalAmount,
+	percentageOfWallet,
 	currencyTotalAmount,
 	currencyPercentageChange,
 	currency,
 	onPress,
 }) => {
-
-
+	// Formatação do valor total da moeda
+	const formattedCurrencyTotalAmount = currencyTotalAmount !== null
+		? new Intl.NumberFormat('pt-BR', {
+			style: 'currency',
+			currency: currency?.symbol || 'BRL', // Usar 'BRL' como padrão se currency não estiver definido
+		}).format(currencyTotalAmount)
+		: 'Loading...';
 
 	return (
 		<TouchableOpacity style={styles.itemContainer} onPress={onPress}>
@@ -34,12 +41,13 @@ const TokenItem: React.FC<TokenItemProps> = ({
 			</View>
 			<View style={styles.leftContainer}>
 				<Text style={styles.name}>{tokenCoin.name}</Text>
-				<Text style={styles.amount}>{tokenCoin.symbol} {totalAmount}</Text>
+				<Text style={styles.amount}>{tokenCoin.symbol.toUpperCase()} {totalAmount}</Text>
+				<Text style={styles.amount}>{percentageOfWallet.toFixed(2)}%</Text>
 			</View>
 
 			<View style={styles.centerContainer}>
 				<Text style={[styles.value, currencyPercentageChange !== null ? (currencyPercentageChange >= 0 ? styles.gain : styles.loss) : null]}>
-					{currencyTotalAmount !== null ? <><Text style={styles.currency}>{currency?.symbol} </Text>{currencyTotalAmount?.toFixed(2)}</> : 'Loading...'}
+					{formattedCurrencyTotalAmount}
 				</Text>
 				{currencyPercentageChange !== null && (
 					<Text style={[styles.currencyPercentageChange, currencyPercentageChange >= 0 ? styles.gain : styles.loss]}>
@@ -47,11 +55,15 @@ const TokenItem: React.FC<TokenItemProps> = ({
 					</Text>
 				)}
 
+				<View style={styles.percentageBarContainer}>
+					<View style={[styles.percentageBar, { width: `${percentageOfWallet}%` }]} />
+				</View>
 			</View>
 
 			<View style={styles.detailsButton}>
 				<Feather name="chevron-right" size={18} color={theme.secondaryText} />
 			</View>
+
 		</TouchableOpacity>
 	);
 };
@@ -126,6 +138,22 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		paddingHorizontal: 20,
 
+	},
+	percentageBarContainer: {
+		display: 'flex',
+		flexDirection: 'row',
+
+		width: '100%',
+		height: 4,
+		backgroundColor: theme.border,
+		borderRadius: 4,
+		marginTop: 5,
+	},
+	percentageBar: {
+
+		height: '100%',
+		backgroundColor: '#fff', // Cor da barra, pode ser ajustada
+		borderRadius: 4,
 	},
 });
 

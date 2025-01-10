@@ -53,7 +53,7 @@ export const fetchCurrencies = async (): Promise<Currency[] | null> => {
 
 export const fetchTokenPrice = async (
   tokenId: string,
-  currency: Currency
+  currency: Currency | null
 ): Promise<number | null> => {
   // Verifica se o preço do token já está em cache e se não expirou
   if (
@@ -64,10 +64,16 @@ export const fetchTokenPrice = async (
     return priceCache[tokenId].value;
   }
 
+  if (!currency || !currency?.symbol) {
+    return null;
+  }
+
   try {
     // Faz uma requisição GET para a API do CoinGecko para obter o preço atual do token
     const response = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=${currency.symbol}&x_cg_demo_api_key=${API_KEY}`
+      `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=${
+        currency!.symbol
+      }&x_cg_demo_api_key=${API_KEY}`
     );
 
     const priceData = response.data; // Armazena os dados da resposta
@@ -75,8 +81,8 @@ export const fetchTokenPrice = async (
     if (
       priceData &&
       priceData[tokenId] &&
-      priceData[tokenId][currency.symbol] &&
-      priceData[tokenId][currency.symbol.toLowerCase()]
+      priceData[tokenId][currency!.symbol] &&
+      priceData[tokenId][currency!.symbol.toLowerCase()]
     ) {
       const price = priceData[tokenId][currency!?.symbol.toLowerCase()]; // Obtém o preço do token na moeda especificada
 

@@ -22,6 +22,7 @@ export interface TokenData {
   currentValue: number | null;
   percentageChange: number | null;
   walletId: string;
+  percentageOfWallet: number;
 }
 
 export interface Coin {

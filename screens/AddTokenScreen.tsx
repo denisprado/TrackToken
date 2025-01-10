@@ -144,7 +144,8 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 				walletId: walletId,
 				totalAmount: 0,
 				currentValue: currentValue,
-				percentageChange: null
+				percentageChange: null,
+				percentageOfWallet: 0
 			});
 
 			navigation.goBack(); // Voltar para a tela anterior
