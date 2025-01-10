@@ -118,9 +118,9 @@ export const loadCurrency = async (): Promise<string | null> => {
       await saveCurrency(CURRENCY); // Salva a moeda padrão se não existir
       const currency = await AsyncStorage.getItem(CURRENCY_KEY);
 
-      return JSON.parse(currency!); // Retorna a moeda padrão
+      return currency; // Retorna a moeda padrão
     }
-    return JSON.parse(currency); // Retorna a moeda existente
+    return currency; // Retorna a moeda existente
   } catch (error) {
     console.error("Error loading currency:", error); // Loga o erro em caso de falha
     return null; // Retorna null em caso de erro

@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, ActivityIndicator, Modal, TextInput, Button, ScrollView } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { fetchTokenPrice, fetchCoins, fetchCurrencies, } from '../utils/api';
-import { saveToken, loadCurrency, saveCurrency, loadTokens, CURRENCY } from '../utils/storage';
-import TokenItem from '../components/TokenItem';
-import { theme } from '../utils/theme';
 import { Feather } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import { Coin, Currency, TokenAddition, TokenData } from '../types/types';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import TokenItem from '../components/TokenItem';
+import { Currency, TokenAddition, TokenData } from '../types/types';
+import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
+import { loadCurrency, loadTokens, saveCurrency } from '../utils/storage';
+import { theme } from '../utils/theme';
+import SettingsModal from '../components/SettingsModal';
 // Definições de tipos
 
 const TokensScreen = ({ route }: { route: any }) => {
@@ -17,10 +18,11 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const routes = route.params; // Obter o ID da carteira
 	const walletId = routes && routes.walletId
 	const walletName = routes && routes.walletName; // Obtendo o nome da carteira a partir dos parâmetros
+	const initialCurrency = routes && routes.initialCurrency;
 	const [tokens, setTokens] = useState<TokenData[]>([]);
 	const [loading, setLoading] = useState(true);
 	const updateInterval = useRef<any>(null);
-	const [currency, setCurrency] = useState<Currency | null>(null);
+	const [currency, setCurrency] = useState<Currency | null>(initialCurrency);
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState<string | null>(null);
 	const [isPrimaryPickerVisible, setIsPrimaryPickerVisible] = useState(false);
@@ -84,7 +86,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 		loadInitialCurrency();
 		fetchCurrenciesData();
-	}, []);
+	}, [navigation]);
 
 	// Funções
 
@@ -98,7 +100,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 						const price = await fetchTokenPrice(token.id, currency!);
 						const totalAmount = calculateTotalAmount(token.additions);
-						const { percentageChange } = calculatePercentageChange(token.additions, price)
+						const { percentageChange } = await calculatePercentageChange(token.additions, price, currency, token.id)
 
 						return {
 							...token,
@@ -137,13 +139,14 @@ const TokensScreen = ({ route }: { route: any }) => {
 		return additions.reduce((sum, addition) => sum + addition.amount, 0);
 	};
 
-	const calculatePercentageChange = (
+	const calculatePercentageChange = async (
 		additions: TokenAddition[],
 		currentPriceCurrency1: number | null,
-
-	): { percentageChange: number | null } => {
+		currency: Currency | null, // Moeda atual selecionada
+		token: string,
+	): Promise<{ percentageChange: number | null; }> => {
 		// Verifica se os preços atuais estão disponíveis
-		if (!currentPriceCurrency1 || additions.length === 0) {
+		if (!currentPriceCurrency1 || additions.length === 0 || !currency) {
 			console.log("Preços atuais ou adições não disponíveis.");
 			return { percentageChange: null };
 		}
@@ -156,27 +159,26 @@ const TokensScreen = ({ route }: { route: any }) => {
 			const amount = addition.amount;
 			totalAmount += amount; // Soma a quantidade total
 			totalInvestmentCurrency1 += amount * addition.priceAtPurchaseCurrency1!; // Usa o preço no momento da compra para moeda 1
-
-			// // Logs para debugar
-			// console.log(`Adição: ${JSON.stringify(addition)}`);
-			// console.log(`Total Amount: ${totalAmount}`);
-			// console.log(`Total Investment Currency 1: ${totalInvestmentCurrency1}`);
 		});
 
+		// Obtém o preço atual do token na moeda selecionada
+		const currentPriceCurrency2 = await fetchTokenPrice(token, findCurrencyBySymbol(currency.symbol)); // Supondo que você tenha acesso ao token.id
+
 		// Calcula o valor total atual para cada moeda
-		const currentTotalValueCurrency1 = totalAmount * currentPriceCurrency1;
+		const currentTotalValueCurrency1 = totalAmount * currentPriceCurrency1; // Valor atual na moeda original
+		const currentTotalValueCurrency2 = totalAmount * currentPriceCurrency2!; // Valor atual na moeda selecionada
 
-		// Logs para verificar os valores atuais
-		// console.log(`Current Price Currency 1: ${currentPriceCurrency1}`);
-		// console.log(`Current Total Value Currency 1: ${currentTotalValueCurrency1}`);
+		// Calcula a porcentagem de mudança em relação à moeda original
+		const percentageChangeCurrency1 = ((currentTotalValueCurrency1 - totalInvestmentCurrency1) / totalInvestmentCurrency1) * 100;
 
-		// Calcula a porcentagem de mudança
-		const percentageChange = ((currentTotalValueCurrency1 - totalInvestmentCurrency1) / totalInvestmentCurrency1) * 100;
+		// Calcula a porcentagem de mudança em relação à moeda selecionada
+		const percentageChangeCurrency2 = ((currentTotalValueCurrency2 - totalInvestmentCurrency1) / totalInvestmentCurrency1) * 100;
 
 		// Logs para verificar as porcentagens calculadas
-		// console.log(`Currency 1 Change: ${currencyChange}`);
+		console.log(`Currency 1 Change: ${percentageChangeCurrency1}`);
+		console.log(`Currency 2 Change: ${percentageChangeCurrency2}`);
 
-		return { percentageChange };
+		return { percentageChange: percentageChangeCurrency2 }; // Retorna a porcentagem em relação à moeda atual
 	};
 
 	const handleTokenPress = (tokenId: string) => {
@@ -250,41 +252,14 @@ const TokensScreen = ({ route }: { route: any }) => {
 				/>
 			)}
 
-			<Modal
-				animationType="slide"
-				transparent={true}
+			<SettingsModal
 				visible={settingsModalVisible}
-				onRequestClose={handleCloseSettingsModal}
-			>
-				<View style={styles.centeredView}>
-					<View style={[styles.modalView, { minWidth: '70%' }]}>
-						<Text style={styles.modalTitle}>Settings</Text>
-						<ScrollView>
-							<Text style={styles.label}>Select currency</Text>
-							<TouchableOpacity onPress={() => { setIsPrimaryPickerVisible(true); }}>
-								<Text style={styles.selectText}>{tempPrimaryCurrency}</Text>
-							</TouchableOpacity>
-							{isPrimaryPickerVisible && (
-								<Picker
-									selectedValue={tempPrimaryCurrency}
-									onValueChange={(value) => setTempPrimaryCurrency(value)}
-									style={[styles.picker, { minWidth: '100%', height: 150 }]}
-								>
-									{currencies?.map(currency => (
-										<Picker.Item key={currency.id} label={`${currency.name} (${currency.symbol.toUpperCase()})`} value={currency.id} />
-									))}
-								</Picker>
-							)}
-							<TouchableOpacity style={styles.confirmButton} onPress={handleConfirmCurrencySelection}>
-								<Text style={styles.confirmButtonText}>Confirm</Text>
-							</TouchableOpacity>
-							<TouchableOpacity style={styles.modalClose} onPress={handleCloseSettingsModal}>
-								<Feather name="x" size={20} color={theme.secondaryText} />
-							</TouchableOpacity>
-						</ScrollView>
-					</View>
-				</View>
-			</Modal>
+				onClose={handleCloseSettingsModal}
+				currencies={currencies}
+				selectedCurrency={tempPrimaryCurrency}
+				onCurrencyChange={setTempPrimaryCurrency}
+				onConfirm={handleConfirmCurrencySelection}
+			/>
 		</View>
 	);
 };

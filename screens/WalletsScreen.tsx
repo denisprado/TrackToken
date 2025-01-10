@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { fetchWallets, removeWallet } from '../utils/storage'; // Função para buscar carteiras
+import { fetchWallets, loadCurrency, removeWallet } from '../utils/storage'; // Função para buscar carteiras
 import { Feather } from '@expo/vector-icons'; // Importando Feather para ícones
 import { theme } from '../utils/theme';
-import { Wallet } from '../types/types';
+import { Currency, Wallet } from '../types/types';
 import { useFocusEffect } from '@react-navigation/native';
+import { fetchCurrencies } from '../utils/api';
+import SettingsModal from '../components/SettingsModal';
 
 const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	const [wallets, setWallets] = useState<Wallet[]>([]);
+	const [currency, setCurrency] = useState<Currency | null>(null);
+	const [currencies, setCurrencies] = useState<Currency[]>([]);
+	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState<string | null>(null);
 
 	const loadWallets = async () => {
 		const loadedWallets = await fetchWallets(); // Carregar carteiras do armazenamento
@@ -25,12 +31,30 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	}, []);
 
 	const handleWalletPress = (wallet: Wallet) => {
-		navigation.navigate('Tokens', { walletId: wallet.id, walletName: wallet.name }); // Navegar para a tela de tokens
+		navigation.navigate('Tokens', { walletId: wallet.id, walletName: wallet.name, inicialCurrency: currency }); // Navegar para a tela de tokens
 	};
 
 	const handleCreateWallet = () => {
 		navigation.navigate('CreateWalletScreen'); // Navegar para a tela de criação de carteira
 	};
+
+
+	useEffect(() => {
+		const loadInitialCurrency = async () => {
+			const savedCurrency = await loadCurrency();
+			setCurrency({ id: savedCurrency!, name: savedCurrency!, symbol: savedCurrency! });
+		};
+
+
+		const fetchCurrenciesData = async () => {
+			const data = await fetchCurrencies();
+			if (data) {
+				setCurrencies(data);
+			}
+		};
+		fetchCurrenciesData();
+		loadInitialCurrency();
+	}, []);
 
 	const handleDeleteWallet = async (walletId: string) => {
 		Alert.alert(
@@ -53,6 +77,18 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 		);
 	};
 
+	const handleOpenSettingsModal = () => {
+		setSettingsModalVisible(true);
+	};
+
+	const handleCloseSettingsModal = () => {
+		setSettingsModalVisible(false);
+	};
+
+	const handleConfirmCurrencySelection = () => {
+		// Lógica para confirmar a seleção da moeda
+		handleCloseSettingsModal();
+	};
 
 	const renderWalletItem = ({ item }: { item: Wallet }) => (
 		<TouchableOpacity style={styles.walletItem} onPress={() => handleWalletPress(item)}>
@@ -79,6 +115,18 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 				renderItem={renderWalletItem}
 				keyExtractor={(item) => item.id}
 
+			/>
+			<TouchableOpacity onPress={handleOpenSettingsModal}>
+				<Text style={styles.createButtonText}>Open Settings</Text>
+			</TouchableOpacity>
+
+			<SettingsModal
+				visible={settingsModalVisible}
+				onClose={handleCloseSettingsModal}
+				currencies={currencies}
+				selectedCurrency={tempPrimaryCurrency}
+				onCurrencyChange={setTempPrimaryCurrency}
+				onConfirm={handleConfirmCurrencySelection}
 			/>
 		</View>
 	);

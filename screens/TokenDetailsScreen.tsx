@@ -26,6 +26,8 @@ const TokenDetailsScreen = () => {
 
 
 	const loadTokenDetails = async () => {
+
+
 		try {
 			const savedTokens = await loadTokens();
 			if (savedTokens) {

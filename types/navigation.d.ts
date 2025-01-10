@@ -2,7 +2,7 @@ import { ParamListBase } from "@react-navigation/native";
 
 export type RootStackParamList = {
   Wallets: undefined;
-  Tokens: undefined;
+  Tokens: { initialCurrency: string; walletId: string; walletName: string };
   AddToken: { walletId: string };
   CreateWalletScreen: undefined;
   TokenDetails: { tokenId: string };
