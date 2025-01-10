@@ -14,13 +14,13 @@ import {
 	View
 } from 'react-native';
 import { RootStackParamList } from '../types/navigation';
-import { Coin } from '../types/types';
-import { fetchCoins, fetchTokenPrice } from '../utils/api';
-import { loadCurrency, saveToken } from '../utils/storage';
+import { Coin, Currency } from '../types/types';
+import { fetchCoins, fetchCurrencies, fetchTokenPrice } from '../utils/api';
+import { CURRENCY, loadCurrency, saveToken } from '../utils/storage';
 import { theme } from '../utils/theme';
 
-const SwapTokenScreen = async () => {
-	const DEFAULT_CURRENCY_1 = await loadCurrency();
+const SwapTokenScreen = () => {
+
 	const navigation = useNavigation<import('@react-navigation/native').NavigationProp<RootStackParamList>>();
 	const route = useRoute();
 	const { tokenId, totalAmount } = route.params as { tokenId?: string, totalAmount?: number };
@@ -33,7 +33,7 @@ const SwapTokenScreen = async () => {
 	const debounceTimer = useRef<any>(null);
 	const [fromModalVisible, setFromModalVisible] = useState(false);
 	const [toModalVisible, setToModalVisible] = useState(false);
-	const [currency, setCurrency] = useState(DEFAULT_CURRENCY_1);
+	const [currency, setCurrency] = useState<Currency | null>();
 
 	useEffect(() => {
 		const fetchTokens = async () => {
@@ -116,16 +116,25 @@ const SwapTokenScreen = async () => {
 					text: 'Swap',
 					onPress: async () => {
 						setIsCalculating(true);
-						const currency1 = await loadCurrency();
+						const currency = await loadCurrency();
 						const parsedToAmount = parseFloat(toAmount);
 						try {
-							const toPrice1 = await fetchTokenPrice(toToken.id, currency1!);
+
+							const findCurrencyBySymbol = async (symbolToFind: string) => {
+								const currencies = await fetchCurrencies();
+								const currency = currencies!.find(({ symbol }) => symbol === symbolToFind)
+								return currency
+							}
+
+							const currencySaved = await loadCurrency()
+							const currency = await findCurrencyBySymbol(currencySaved!)
+							const toPrice1 = await fetchTokenPrice(toToken.id, currency!);
 							// Subtract from fromToken
 							await saveToken({
 								id: fromToken.id,
 								name: fromToken.name,
 								amount: -parsedFromAmount,
-								selectedCurrency1: currency1!,
+								tokenCoin: fromToken!,
 								totalAmount: 0,
 								percentageChange: null,
 								currentValue: null,
@@ -137,7 +146,7 @@ const SwapTokenScreen = async () => {
 								name: toToken.name,
 								amount: parsedToAmount,
 								priceCurrency1: toPrice1,
-								selectedCurrency1: currency1!,
+								tokenCoin: toToken,
 								totalAmount: 0,
 								percentageChange: null,
 								currentValue: null,

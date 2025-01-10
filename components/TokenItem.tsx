@@ -1,53 +1,49 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { theme } from '../utils/theme';
-import { Coin, CoinMarketData } from '../types/types';
+import { Coin, CoinMarketData, Currency } from '../types/types';
+import { loadCurrency } from '../utils/storage';
 
 // Definição de tipos para as propriedades do componente
 interface TokenItemProps {
-	name: string;
+	tokenCoin: Coin;
 	totalAmount: string;
-	currency1Value: number | null;
-	onRedeem: () => void;
-	currency1PercentageChange: number | null;
-	selectedCurrency1: Coin;
+	currencyTotalAmount: number | null;
+	currencyPercentageChange: number | null;
+	currency: Currency | null;
 	onPress: () => void;
 }
 
 // Componente funcional TokenItem
 const TokenItem: React.FC<TokenItemProps> = ({
-	name,
+	tokenCoin,
 	totalAmount,
-	currency1Value,
-	currency1PercentageChange,
-	selectedCurrency1,
-
+	currencyTotalAmount,
+	currencyPercentageChange,
+	currency,
 	onPress,
 }) => {
-	console.log(typeof totalAmount)
-	// Função para formatar o nome do token
-	const formatTokenName = (name: string) => {
-		const symbol = name.includes('(') ? name.split('(')[1]?.split(')')[0] : '';
-		const tokenName = name.includes('(') ? name.split('(')[0] : name;
-		return { tokenName, symbol };
-	};
 
-	const { tokenName, symbol } = formatTokenName(name);
+
 
 	return (
 		<TouchableOpacity style={styles.itemContainer} onPress={onPress}>
-			<View style={styles.leftContainer}>
-				<Text style={styles.name}>{tokenName}</Text>
-				<Text style={styles.amount}>{symbol} {totalAmount}</Text>
+			<View style={styles.imageContainer}>
+				<Image source={{ uri: tokenCoin.image }} width={32} height={32}></Image>
 			</View>
+			<View style={styles.leftContainer}>
+				<Text style={styles.name}>{tokenCoin.name}</Text>
+				<Text style={styles.amount}>{tokenCoin.symbol} {totalAmount}</Text>
+			</View>
+
 			<View style={styles.centerContainer}>
-				<Text style={[styles.value, currency1PercentageChange !== null ? (currency1PercentageChange >= 0 ? styles.gain : styles.loss) : null]}>
-					{currency1Value !== null ? <><Text style={styles.currency}>{selectedCurrency1.symbol}</Text>{currency1Value?.toFixed(2)}</> : 'Loading...'}
+				<Text style={[styles.value, currencyPercentageChange !== null ? (currencyPercentageChange >= 0 ? styles.gain : styles.loss) : null]}>
+					{currencyTotalAmount !== null ? <><Text style={styles.currency}>{currency?.symbol} </Text>{currencyTotalAmount?.toFixed(2)}</> : 'Loading...'}
 				</Text>
-				{currency1PercentageChange !== null && (
-					<Text style={[styles.currency1PercentageChange, currency1PercentageChange >= 0 ? styles.gain : styles.loss]}>
-						({currency1PercentageChange?.toFixed(2)}%)
+				{currencyPercentageChange !== null && (
+					<Text style={[styles.currencyPercentageChange, currencyPercentageChange >= 0 ? styles.gain : styles.loss]}>
+						({currencyPercentageChange?.toFixed(2)}%)
 					</Text>
 				)}
 
@@ -67,43 +63,46 @@ const styles = StyleSheet.create({
 		paddingLeft: 10,
 		borderBottomWidth: 1,
 		borderBottomColor: theme.border,
-
+		gap: 10,
 		flexDirection: 'row',
 		alignItems: 'center',
 		backgroundColor: theme.cardBackground,
+	},
+	imageContainer: {
+		width: 32,
+		height: 32
 	},
 	leftContainer: {
 		width: '30%',
 		paddingLeft: 5,
 	},
 	centerContainer: {
-		width: '56%',
+		flex: 1,
 		paddingLeft: 5,
 		flexDirection: 'column',
 		alignItems: 'flex-end',
 	},
-
 	currencyValueContainer: {
 		alignItems: 'flex-end',
 	},
 	name: {
-		fontSize: 15,
+		fontSize: 16,
 		color: theme.text,
 		textAlign: 'left',
 		fontWeight: 'bold',
 	},
 	amount: {
-		fontSize: 12,
+		fontSize: 14,
 		color: theme.secondaryText,
 		fontFamily: 'monospace',
 
 	},
 	value: {
-		fontSize: 12,
+		fontSize: 14,
 		color: theme.text,
 		fontFamily: 'monospace',
 	},
-	currency1PercentageChange: {
+	currencyPercentageChange: {
 		fontSize: 10,
 		marginLeft: 5,
 		fontFamily: 'monospace',
@@ -125,7 +124,8 @@ const styles = StyleSheet.create({
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
-		paddingLeft: 15,
+		paddingHorizontal: 20,
+
 	},
 });
 

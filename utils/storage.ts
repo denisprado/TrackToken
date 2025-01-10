@@ -3,14 +3,7 @@ import { Coin, TokenAddition, TokenData, Wallet } from "../types/types";
 
 const STORAGE_KEY = "token_data"; // Chave para armazenar os dados dos tokens
 const CURRENCY_KEY = "selected_currency"; // Chave para armazenar a moeda selecionada
-export const CURRENCY: Coin = {
-  id: "usd-coin",
-  symbol: "usdc",
-  name: "USDC",
-  image:
-    "https://coin-images.coingecko.com/coins/images/6319/large/usdc.png?1696506694",
-  market_cap_rank: 8,
-}; // Lista de moedas suportadas
+export const CURRENCY: string = "usd"; // Lista de moedas suportadas
 
 // Função para salvar um token no armazenamento
 // Função para salvar um token no armazenamento
@@ -46,8 +39,7 @@ export const saveToken = async (
         existingTokens[existingTokenIndex].additions = []; // Inicializa adições se não existir
       }
       existingTokens[existingTokenIndex].additions.push(newTokenAddition); // Adiciona a nova adição
-      existingTokens[existingTokenIndex].selectedCurrency1 =
-        token.selectedCurrency1; // Atualiza a moeda selecionada 1
+      existingTokens[existingTokenIndex].tokenCoin = token.tokenCoin; // Atualiza a moeda selecionada 1
     } else {
       // Se for um novo token, adiciona ao array
       existingTokens.push({
@@ -69,10 +61,9 @@ export const saveToken = async (
         });
         return totalAmount > 0; // Retorna apenas tokens com totalAmount > 0
       });
-    console.log(JSON.stringify(updatedTokens));
+
     // Salva os tokens atualizados no armazenamento
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTokens));
-    console.log("saving", JSON.stringify(updatedTokens));
   } catch (error) {
     console.error("Erro ao salvar token", error); // Loga o erro em caso de falha
     throw error; // Lança o erro para tratamento posterior
@@ -111,7 +102,7 @@ export const removeToken = async (tokenId: string) => {
 };
 
 // Função para salvar a moeda selecionada no armazenamento
-export const saveCurrency = async (currency: Coin) => {
+export const saveCurrency = async (currency: string) => {
   try {
     await AsyncStorage.setItem(CURRENCY_KEY, JSON.stringify(currency)); // Salva a moeda com a chave correspondente
   } catch (error) {
@@ -120,12 +111,13 @@ export const saveCurrency = async (currency: Coin) => {
 };
 
 // Função para carregar a moeda selecionada do armazenamento
-export const loadCurrency = async (): Promise<Coin | null> => {
+export const loadCurrency = async (): Promise<string | null> => {
   try {
     const currency = await AsyncStorage.getItem(CURRENCY_KEY); // Obtém a moeda do armazenamento
     if (!currency) {
       await saveCurrency(CURRENCY); // Salva a moeda padrão se não existir
-      const currency = await AsyncStorage.getItem(CURRENCY_KEY); // Obtém a
+      const currency = await AsyncStorage.getItem(CURRENCY_KEY);
+
       return JSON.parse(currency!); // Retorna a moeda padrão
     }
     return JSON.parse(currency); // Retorna a moeda existente

@@ -5,6 +5,7 @@ import {
 	Alert,
 	Button,
 	FlatList,
+	Image,
 	KeyboardAvoidingView,
 	Modal,
 	Platform,
@@ -15,14 +16,12 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { Coin } from '../types/types';
-import { fetchCoins, fetchTokenPrice } from '../utils/api';
+import { Coin, Currency } from '../types/types';
+import { fetchCoins, fetchCurrencies, fetchTokenPrice } from '../utils/api';
 import { loadCurrency, saveToken } from '../utils/storage';
 import { theme } from '../utils/theme';
 
-const AddTokenScreen = async ({ route }: { route: { params: { walletId: string } } }) => {
-
-	const DEFAULT_CURRENCY_1 = await loadCurrency();
+const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) => {
 
 	const navigation = useNavigation();
 	const [tokens, setTokens] = useState<Coin[]>([]);
@@ -33,7 +32,7 @@ const AddTokenScreen = async ({ route }: { route: { params: { walletId: string }
 	const [filteredTokens, setFilteredTokens] = useState<Coin[]>([]);
 	const [currentTokenValue, setCurrentTokenValue] = useState<number>(0);
 	const [totalValueReceived, setTotalValueReceived] = useState<number>(0);
-	const [currency1, setCurrency1] = useState<Coin>(DEFAULT_CURRENCY_1!);
+	const [currency, setCurrency] = useState<Currency | null>(null);
 	const [isEditing, setIsEditing] = useState<boolean>(false);
 	const routes = route.params; // Obter o ID da carteira
 	const walletId = routes && routes.walletId
@@ -51,19 +50,21 @@ const AddTokenScreen = async ({ route }: { route: { params: { walletId: string }
 	}, []);
 
 	useEffect(() => {
-		const fetchCurrencies = async () => {
-			const currency1Value = await loadCurrency();
-			setCurrency1(currency1Value!);
+		const fetchCurrenciesAddToken = async () => {
+			const currency1saved = await loadCurrency();
+			const currencies = await fetchCurrencies()
+			const currency1Value = currencies!.find(({ name }) => name === currency1saved)
+			setCurrency(currency1Value!);
 		};
 
-		fetchCurrencies();
+		fetchCurrenciesAddToken();
 	}, []);
 
 	useEffect(() => {
 		if (searchText) {
 			const filtered = tokens.filter(token =>
-				token.name.toLowerCase().includes(searchText.toLowerCase()) ||
-				token.symbol.toLowerCase().includes(searchText.toLowerCase())
+				token!.name!.toLowerCase().includes(searchText.toLowerCase()) ||
+				token!.symbol!.toLowerCase().includes(searchText.toLowerCase())
 			);
 			setFilteredTokens(filtered)
 		}
@@ -74,14 +75,16 @@ const AddTokenScreen = async ({ route }: { route: { params: { walletId: string }
 
 	useEffect(() => {
 		const fetchTokenValue = async () => {
+			console.log(selectedToken?.id, currency)
 			if (selectedToken) {
-				const price = await fetchTokenPrice(selectedToken.id, currency1);
+				const price = await fetchTokenPrice(selectedToken.id, currency!);
+				console.log(price)
 				setCurrentTokenValue(price ? price : 0);
 			}
 		};
 
 		fetchTokenValue();
-	}, [selectedToken, currency1]);
+	}, [selectedToken, currency]);
 
 	const handleTokenAmountChange = (value: string) => {
 		const sanitizedValue = value.replace(',', '.');
@@ -125,7 +128,7 @@ const AddTokenScreen = async ({ route }: { route: { params: { walletId: string }
 
 		const amount = parseFloat(tokenAmount.replace(',', '.'));
 		const currentValue = currentTokenValue;
-		console.log("waller", walletId)
+
 		if (isNaN(amount) || isNaN(currentValue)) {
 			Alert.alert('Error', 'Invalid amount or current value.');
 			return;
@@ -137,7 +140,7 @@ const AddTokenScreen = async ({ route }: { route: { params: { walletId: string }
 				name: selectedToken.name,
 				amount: amount,
 				priceCurrency1: currentValue,
-				selectedCurrency1: currency1,
+				tokenCoin: selectedToken,
 				walletId: walletId,
 				totalAmount: 0,
 				currentValue: currentValue,
@@ -165,6 +168,9 @@ const AddTokenScreen = async ({ route }: { route: { params: { walletId: string }
 	};
 	const renderTokenItem = ({ item }: { item: Coin }) => (
 		<TouchableOpacity style={styles.tokenItem} onPress={() => handleSelectToken(item)}>
+
+			<Image source={{ uri: item?.image }} width={32} height={32} ></Image>
+
 			<Text style={styles.tokenItemText}>{item.name} ({item.symbol.toUpperCase()})</Text>
 		</TouchableOpacity>
 	);
@@ -206,7 +212,7 @@ const AddTokenScreen = async ({ route }: { route: { params: { walletId: string }
 
 					{/* Valor Atual do Token */}
 					<View style={styles.inputContainer}>
-						<Text style={styles.label}>Current Value in {currency1.name}:</Text>
+						{currency && <Text style={styles.label}>Current Value in {currency.name}:</Text>}
 						<View style={{ flexDirection: 'row', alignItems: 'center' }}>
 							<TextInput
 								style={[styles.input, { color: theme.text, flex: 1 }]}
@@ -226,7 +232,7 @@ const AddTokenScreen = async ({ route }: { route: { params: { walletId: string }
 
 					{/* Valor Total Recebido */}
 					<View style={styles.inputContainer}>
-						<Text style={styles.label}>Total Value Received in {currency1.name}:</Text>
+						{currency && <Text style={styles.label}>Total Value Received in {currency!.name}:</Text>}
 						<Text style={styles.value}>{totalValueReceived}</Text>
 					</View>
 
@@ -352,10 +358,15 @@ const styles = StyleSheet.create({
 		padding: 10,
 		borderBottomWidth: 1,
 		borderBottomColor: theme.border,
+		display: 'flex',
+		flexDirection: 'row',
+		gap: 20,
+		justifyContent: 'flex-start'
 	},
 	tokenItemText: {
 		fontSize: 16,
 		color: theme.text,
+		textAlign: 'left'
 	},
 	value: {
 		fontSize: 16,

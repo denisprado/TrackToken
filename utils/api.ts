@@ -53,7 +53,7 @@ export const fetchCurrencies = async (): Promise<Currency[] | null> => {
 
 export const fetchTokenPrice = async (
   tokenId: string,
-  currency: Coin
+  currency: Currency
 ): Promise<number | null> => {
   // Verifica se o preço do token já está em cache e se não expirou
   if (
@@ -71,14 +71,14 @@ export const fetchTokenPrice = async (
     );
 
     const priceData = response.data; // Armazena os dados da resposta
-
     // Verifica se os dados do preço estão disponíveis na resposta
     if (
       priceData &&
       priceData[tokenId] &&
+      priceData[tokenId][currency.symbol] &&
       priceData[tokenId][currency.symbol.toLowerCase()]
     ) {
-      const price = priceData[tokenId][currency.symbol.toLowerCase()]; // Obtém o preço do token na moeda especificada
+      const price = priceData[tokenId][currency!?.symbol.toLowerCase()]; // Obtém o preço do token na moeda especificada
 
       // Salva o preço e a hora da última busca no cache
       priceCache[tokenId] = { value: price, lastFetched: Date.now() };
@@ -91,6 +91,7 @@ export const fetchTokenPrice = async (
     return null; // Retorna null em caso de erro
   }
 };
+
 export const fetchCoins = async (): Promise<Coin[] | null> => {
   return new Promise(async (resolve, reject) => {
     requestQueue.push(async () => {

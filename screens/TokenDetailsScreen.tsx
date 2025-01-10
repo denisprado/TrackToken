@@ -6,7 +6,7 @@ import { theme } from '../utils/theme';
 import { RootStackParamList } from '../types/navigation';
 import TokenAdditionItem from '../components/TokenAdditionItem';
 import { Feather } from '@expo/vector-icons';
-import { fetchTokenPrice } from '../utils/api';
+import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
 import { Token, TokenAddition } from '../types/types';
 
 
@@ -33,7 +33,7 @@ const TokenDetailsScreen = () => {
 				if (tokenDetails) {
 					const tokenWithPrice = await Promise.all(
 						tokenDetails.additions.map(async (addition: TokenAddition) => {
-							const currentValue = await fetchTokenPrice(tokenDetails.id, tokenDetails.selectedCurrency1);
+							const currentValue = await fetchTokenPrice(tokenDetails.id, tokenDetails.tokenCoin!);
 
 							const percentageChange = currentValue ? (((currentValue - (addition.amount > 0 ? currentValue : 0)) / (addition.amount > 0 ? currentValue : 0)) * 100) : null;
 
@@ -87,17 +87,22 @@ const TokenDetailsScreen = () => {
 				return;
 			}
 
-			const currency1 = await loadCurrency()
-			const currentPrice1 = await fetchTokenPrice(tokenId, currency1!);
+			const findCurrencyBySymbol = async (symbolToFind: string) => {
+				const currencies = await fetchCurrencies();
+				const currency = currencies!.find(({ symbol }) => symbol === symbolToFind)
+				return currency
+			}
 
-			console.log("Preço atual da moeda 1:", currentPrice1);
+			const currencySaved = await loadCurrency()
+			const currency = await findCurrencyBySymbol(currencySaved!)
+			const currentPrice = await fetchTokenPrice(tokenId, currency!);
 
 			await saveToken({
 				id: tokenId,
 				name: token?.name || '',
 				amount: -amount,
-				priceCurrency1: currentPrice1,
-				selectedCurrency1: token!.selectedCurrency1,
+				priceCurrency1: currentPrice,
+				tokenCoin: token!.tokenCoin,
 				totalAmount: 0,
 				percentageChange: null,
 				currentValue: null,
