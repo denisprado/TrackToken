@@ -5,7 +5,7 @@ export type RootStackParamList = {
   Tokens: { initialCurrency: string; walletId: string; walletName: string };
   AddToken: { walletId: string };
   CreateWalletScreen: undefined;
-  TokenDetails: { tokenId: string };
+  TokenDetails: { tokenId: string; currency: string };
   SwapToken: { tokenId?: string; totalAmount?: number } | undefined;
 };
 

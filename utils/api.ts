@@ -68,10 +68,12 @@ export const fetchTokenPrice = async (
     Date.now() - priceCache[tokenId].lastFetched < CACHE_EXPIRY_TIME
   ) {
     // Se o preço estiver no cache e ainda válido, retorna o valor armazenado
+    console.log(priceCache[tokenId].value);
     return priceCache[tokenId].value;
   }
 
-  if (!currency || !currency?.symbol) {
+  if (!currency || !currency.symbol) {
+    console.log(currency);
     return null;
   }
 
@@ -85,6 +87,7 @@ export const fetchTokenPrice = async (
 
     const priceData = response.data; // Armazena os dados da resposta
     // Verifica se os dados do preço estão disponíveis na resposta
+    console.log("priceData", response);
     if (
       priceData &&
       priceData[tokenId] &&

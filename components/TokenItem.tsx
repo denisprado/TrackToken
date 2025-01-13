@@ -30,7 +30,7 @@ const TokenItem: React.FC<TokenItemProps> = ({
 	const formattedCurrencyTotalAmount = currencyTotalAmount !== null
 		? new Intl.NumberFormat('pt-BR', {
 			style: 'currency',
-			currency: currency?.symbol || 'BRL', // Usar 'BRL' como padrão se currency não estiver definido
+			currency: currency?.symbol || 'usd', // Usar 'usd' como padrão se currency não estiver definido
 		}).format(currencyTotalAmount)
 		: 'Loading...';
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { fetchWallets, loadCurrency, removeWallet } from '../utils/storage'; // Função para buscar carteiras
+import { clearStorage, fetchWallets, loadCurrency, removeWallet } from '../utils/storage'; // Função para buscar carteiras
 import { Feather } from '@expo/vector-icons'; // Importando Feather para ícones
 import { theme } from '../utils/theme';
 import { Currency, Wallet } from '../types/types';
@@ -90,6 +90,12 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 		handleCloseSettingsModal();
 	};
 
+	const handleClearStorage = async () => {
+		await clearStorage(); // Chama a função para limpar o armazenamento
+		Alert.alert("Sucesso", "Todos os dados foram limpos."); // Exibe um alerta de sucesso
+		loadWallets(); // Recarrega os tokens após a limpeza
+	};
+
 	const renderWalletItem = ({ item }: { item: Wallet }) => (
 		<TouchableOpacity style={styles.walletItem} onPress={() => handleWalletPress(item)}>
 			<View>
@@ -118,6 +124,9 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 			/>
 			<TouchableOpacity onPress={handleOpenSettingsModal}>
 				<Text style={styles.createButtonText}>Open Settings</Text>
+			</TouchableOpacity>
+			<TouchableOpacity style={styles.createButtonText} onPress={handleClearStorage}>
+				<Feather name="trash-2" size={24} color={theme.text} />
 			</TouchableOpacity>
 
 			<SettingsModal

@@ -101,7 +101,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 						const price = await fetchTokenPrice(token.id, currency!);
 						const totalAmount = calculateTotalAmount(token.additions);
-						const { percentageChange } = await calculatePercentageChange(token.additions, price, token.id)
+						const { percentageChange } = await calculatePercentageChange(token.additions, price)
 
 						return {
 							...token,
@@ -143,10 +143,9 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const calculatePercentageChange = async (
 		additions: TokenAddition[],
 		currentPriceCurrency1: number | null,
-		token: string,
 	): Promise<{ percentageChange: number | null; }> => {
 		// Verifica se os preços atuais estão disponíveis
-		console.log(currency, additions.length, currentPriceCurrency1)
+
 		if (!currentPriceCurrency1 || additions.length === 0 || !currency) {
 			console.log("Preços atuais ou adições não disponíveis.");
 			return { percentageChange: null };
@@ -160,34 +159,25 @@ const TokensScreen = ({ route }: { route: any }) => {
 			const amount = addition.amount;
 			totalAmount += amount; // Soma a quantidade total
 			totalInvestmentCurrency1 += amount * addition.priceAtPurchaseCurrency1!; // Usa o preço no momento da compra para moeda 1
+
 		});
 
 		// Obtém o preço atual do token na moeda selecionada
-		const currentPriceCurrency2 = await fetchTokenPrice(token, findCurrencyBySymbol(currency.symbol)); // Supondo que você tenha acesso ao token.id
 
-		// Calcula o valor total atual para cada moeda
 		const currentTotalValueCurrency1 = totalAmount * currentPriceCurrency1; // Valor atual na moeda original
-		const currentTotalValueCurrency2 = totalAmount * currentPriceCurrency2!; // Valor atual na moeda selecionada
 
 		// Calcula a porcentagem de mudança em relação à moeda original
 		const percentageChangeCurrency1 = ((currentTotalValueCurrency1 - totalInvestmentCurrency1) / totalInvestmentCurrency1) * 100;
 
-		// Calcula a porcentagem de mudança em relação à moeda selecionada
-		const percentageChangeCurrency2 = ((currentTotalValueCurrency2 - totalInvestmentCurrency1) / totalInvestmentCurrency1) * 100;
-
-		// Logs para verificar as porcentagens calculadas
-		console.log(`Currency 1 Change: ${percentageChangeCurrency1}`);
-		console.log(`Currency 2 Change: ${percentageChangeCurrency2}`);
-
-		return { percentageChange: percentageChangeCurrency2 }; // Retorna a porcentagem em relação à moeda atual
+		return { percentageChange: percentageChangeCurrency1 }; // Retorna a porcentagem em relação à moeda atual
 	};
 
 	const handleTokenPress = (tokenId: string) => {
-		navigation.navigate('TokenDetails', { tokenId });
+		navigation.navigate('TokenDetails', { tokenId, currency: currency?.symbol! });
 	};
 
 	const handleOpenSettingsModal = () => {
-		setSettingsModalVisible(true)
+		setSettingsModalVisible(true);
 	};
 
 	const handleCloseSettingsModal = () => {
@@ -203,19 +193,13 @@ const TokensScreen = ({ route }: { route: any }) => {
 		loadTokensForWallet(); // Chama a função para recarregar os tokens
 	};
 
-	// const handleClearStorage = async () => {
-	// 	await clearStorage(); // Chama a função para limpar o armazenamento
-	// 	Alert.alert("Sucesso", "Todos os dados foram limpos."); // Exibe um alerta de sucesso
-	// 	loadInitialTokens(); // Recarrega os tokens após a limpeza
-	// };
+
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.header}>
 				<Text style={styles.title}>{walletName}</Text>
-				{/* <TouchableOpacity style={styles.iconButton} onPress={handleClearStorage}>
-					<Feather name="trash-2" size={24} color={theme.text} />
-				</TouchableOpacity> */}
+
 				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddToken', { walletId: walletId })}>
 					<Feather name="plus-circle" size={24} color={theme.text} />
 				</TouchableOpacity>

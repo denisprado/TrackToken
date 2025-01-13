@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, Modal, TextInput, Button } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, Modal, TextInput, Button, Image } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { loadTokens, saveToken, saveCurrency, loadCurrency } from '../utils/storage';
 import { theme } from '../utils/theme';
@@ -7,27 +7,49 @@ import { RootStackParamList } from '../types/navigation';
 import TokenAdditionItem from '../components/TokenAdditionItem';
 import { Feather } from '@expo/vector-icons';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { Token, TokenAddition } from '../types/types';
+import { Token, TokenAddition, TokenData } from '../types/types';
 
 
 
 const TokenDetailsScreen = () => {
 	const navigation = useNavigation<import('@react-navigation/native').NavigationProp<RootStackParamList>>();
 	const route = useRoute();
-	const { tokenId } = route.params as { tokenId: string };
-	const [token, setToken] = useState<Token | null>(null);
+	const { tokenId, currency } = route.params as { tokenId: string, currency: string };
+	const [token, setToken] = useState<TokenData | null>(null);
 	const [modalVisible, setModalVisible] = useState(false);
 	const [redeemAmount, setRedeemAmount] = useState('');
-
 
 	useEffect(() => {
 		loadTokenDetails();
 	}, []);
 
+	const calculatePercentageChange = async (
+		ammout: TokenAddition['amount'], priceAtPurchase: number, tokenId: string
+
+	): Promise<{ percentageChange: number; }> => {
+
+
+
+		// Verifica se os preços atuais estão disponíveis
+		const priceNow = await fetchTokenPrice(tokenId, { id: currency, symbol: currency, name: currency })
+		if (!ammout || !priceNow) {
+			return { percentageChange: 0 };
+		}
+
+		// Obtém o preço atual do token na moeda selecionada
+		const totalNow = ammout * priceNow!; // Valor atual na moeda original
+
+		const totalInvestment = ammout * priceAtPurchase
+
+		// Calcula a porcentagem de mudança em relação à moeda original
+		const percentageChange = ((totalNow - totalInvestment) / totalInvestment) * 100;
+
+		console.log(ammout, priceNow, totalNow, totalInvestment, priceAtPurchase, percentageChange)
+
+		return { percentageChange: percentageChange }; // Retorna a porcentagem em relação à moeda atual
+	};
 
 	const loadTokenDetails = async () => {
-
-
 		try {
 			const savedTokens = await loadTokens();
 			if (savedTokens) {
@@ -35,9 +57,9 @@ const TokenDetailsScreen = () => {
 				if (tokenDetails) {
 					const tokenWithPrice = await Promise.all(
 						tokenDetails.additions.map(async (addition: TokenAddition) => {
-							const currentValue = await fetchTokenPrice(tokenDetails.id, tokenDetails.tokenCoin!);
+							const currentValue = await fetchTokenPrice(tokenDetails.id, { id: currency, name: currency, symbol: currency });
 
-							const percentageChange = currentValue ? (((currentValue - (addition.amount > 0 ? currentValue : 0)) / (addition.amount > 0 ? currentValue : 0)) * 100) : null;
+							const { percentageChange } = await calculatePercentageChange(addition.amount, addition.priceAtPurchaseCurrency1!, tokenDetails?.tokenCoin?.id!);
 
 							const timestamp = addition.timestamp
 
@@ -45,13 +67,12 @@ const TokenDetailsScreen = () => {
 								...addition,
 								timestamp,
 								percentageChange,
-								currentValue
+								currentValue: currentValue ? currentValue * addition.amount : 0
 							};
 						})
 					);
 					setToken({
 						...tokenDetails,
-
 						additions: tokenWithPrice
 					});
 				}
@@ -127,7 +148,7 @@ const TokenDetailsScreen = () => {
 	};
 
 	const renderAdditionItem = ({ item }: { item: any }) => (
-		<TokenAdditionItem amount={item.amount} timestamp={item.timestamp} percentageChange={item.percentageChange} />
+		<TokenAdditionItem amount={item.amount} timestamp={item.timestamp} percentageChange={item.percentageChange} currentValue={item.currentValue} currency={currency} />
 	);
 
 	return (
@@ -135,7 +156,10 @@ const TokenDetailsScreen = () => {
 			{token ? (
 				<>
 					<View style={styles.header}>
-						<Text style={styles.title}>{token.name} Details</Text>
+						<View style={styles.headerToken}>
+							<Image source={{ uri: token.tokenCoin?.image }} width={32} height={32}></Image>
+							<Text style={styles.title}>{token.name} Details</Text>
+						</View>
 						<TouchableOpacity style={styles.iconButton} onPress={() => handleSwapTokensPress(token.id, 0)}>
 							<Feather name="repeat" size={24} color={theme.text} />
 						</TouchableOpacity>
@@ -194,13 +218,23 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
-		marginBottom: 20
+		marginBottom: 20,
+	},
+	headerToken: {
+		display: 'flex',
+		justifyContent: 'flex-start',
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 20,
+		flex: 1,
+
 	},
 	title: {
 		fontSize: 24,
 		fontWeight: 'bold',
 		color: theme.text,
-		marginBottom: 20
+
+
 	},
 	additionItem: {
 		padding: 10,
