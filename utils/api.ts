@@ -28,6 +28,7 @@ const processQueue = async () => {
     setTimeout(processQueue, delayBetweenRequests);
   }
 };
+
 export const fetchCurrencies = async (): Promise<Currency[] | null> => {
   return new Promise(async (resolve, reject) => {
     requestQueue.push(async () => {
@@ -35,11 +36,17 @@ export const fetchCurrencies = async (): Promise<Currency[] | null> => {
         const response = await axios.get(
           `https://api.coingecko.com/api/v3/simple/supported_vs_currencies`
         );
+        // Verifica se a resposta é uma string e a analisa
+        const currenciesData =
+          typeof response.data === "string"
+            ? JSON.parse(response.data)
+            : response.data;
+
         resolve(
           response.data.map((currency: string) => ({
-            id: currency,
-            symbol: currency,
-            name: currency,
+            id: currency.replace(/"/g, ""),
+            symbol: currency.replace(/"/g, ""),
+            name: currency.replace(/"/g, ""),
           }))
         );
       } catch (error) {

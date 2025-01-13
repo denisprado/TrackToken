@@ -31,7 +31,7 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	}, []);
 
 	const handleWalletPress = (wallet: Wallet) => {
-		navigation.navigate('Tokens', { walletId: wallet.id, walletName: wallet.name, inicialCurrency: currency }); // Navegar para a tela de tokens
+		navigation.navigate('Tokens', { walletId: wallet.id, walletName: wallet.name, initialCurrency: currency }); // Navegar para a tela de tokens
 	};
 
 	const handleCreateWallet = () => {

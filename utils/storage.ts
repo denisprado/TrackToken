@@ -104,7 +104,7 @@ export const removeToken = async (tokenId: string) => {
 // Função para salvar a moeda selecionada no armazenamento
 export const saveCurrency = async (currency: string) => {
   try {
-    await AsyncStorage.setItem(CURRENCY_KEY, JSON.stringify(currency)); // Salva a moeda com a chave correspondente
+    await AsyncStorage.setItem(CURRENCY_KEY, currency); // Salva a moeda com a chave correspondente
   } catch (error) {
     console.error("Erro ao salvar a moeda", error); // Loga o erro em caso de falha
   }
@@ -117,10 +117,9 @@ export const loadCurrency = async (): Promise<string | null> => {
     if (!currency) {
       await saveCurrency(CURRENCY); // Salva a moeda padrão se não existir
       const currency = await AsyncStorage.getItem(CURRENCY_KEY);
-
-      return currency; // Retorna a moeda padrão
+      return currency!.replace(/"/g, ""); // Retorna a moeda padrão
     }
-    return currency; // Retorna a moeda existente
+    return currency!.replace(/"/g, ""); // Retorna a moeda existente
   } catch (error) {
     console.error("Error loading currency:", error); // Loga o erro em caso de falha
     return null; // Retorna null em caso de erro

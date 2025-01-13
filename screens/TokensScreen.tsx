@@ -19,6 +19,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const walletId = routes && routes.walletId
 	const walletName = routes && routes.walletName; // Obtendo o nome da carteira a partir dos parâmetros
 	const initialCurrency = routes && routes.initialCurrency;
+
 	const [tokens, setTokens] = useState<TokenData[]>([]);
 	const [loading, setLoading] = useState(true);
 	const updateInterval = useRef<any>(null);
@@ -65,8 +66,8 @@ const TokensScreen = ({ route }: { route: any }) => {
 	}, [navigation]);
 
 	const findCurrencyBySymbol = (symbolToFind: string) => {
-		const currency = currencies.find(({ symbol }) => symbol === symbolToFind) || null
-		return currency
+		const currencyToFind = currencies.find(({ symbol }) => symbol === symbolToFind.toLowerCase())
+		return currencyToFind!
 	}
 
 	useEffect(() => {
@@ -100,7 +101,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 						const price = await fetchTokenPrice(token.id, currency!);
 						const totalAmount = calculateTotalAmount(token.additions);
-						const { percentageChange } = await calculatePercentageChange(token.additions, price, currency, token.id)
+						const { percentageChange } = await calculatePercentageChange(token.additions, price, token.id)
 
 						return {
 							...token,
@@ -142,10 +143,10 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const calculatePercentageChange = async (
 		additions: TokenAddition[],
 		currentPriceCurrency1: number | null,
-		currency: Currency | null, // Moeda atual selecionada
 		token: string,
 	): Promise<{ percentageChange: number | null; }> => {
 		// Verifica se os preços atuais estão disponíveis
+		console.log(currency, additions.length, currentPriceCurrency1)
 		if (!currentPriceCurrency1 || additions.length === 0 || !currency) {
 			console.log("Preços atuais ou adições não disponíveis.");
 			return { percentageChange: null };
