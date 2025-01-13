@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { clearStorage, fetchWallets, loadCurrency, removeWallet } from '../utils/storage'; // Função para buscar carteiras
+import { clearStorage, fetchWallets, loadCurrency, loadTokensByWalletId, removeWallet } from '../utils/storage'; // Função para buscar carteiras
 import { Feather } from '@expo/vector-icons'; // Importando Feather para ícones
 import { theme } from '../utils/theme';
 import { Currency, Wallet } from '../types/types';
 import { useFocusEffect } from '@react-navigation/native';
-import { fetchCurrencies } from '../utils/api';
+import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
 import SettingsModal from '../components/SettingsModal';
 
 const WalletsScreen = ({ navigation }: { navigation: any }) => {
@@ -37,6 +37,7 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	const handleCreateWallet = () => {
 		navigation.navigate('CreateWalletScreen'); // Navegar para a tela de criação de carteira
 	};
+
 
 
 	useEffect(() => {
@@ -96,14 +97,20 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 		loadWallets(); // Recarrega os tokens após a limpeza
 	};
 
-	const renderWalletItem = ({ item }: { item: Wallet }) => (
+	const walletAmount = async (walletId: string) => {
+		const tokens = await loadTokensByWalletId(walletId)
+		const ammout = tokens?.reduce(async (sum, token) => sum + (token.totalAmount * await fetchTokenPrice(token.tokenCoin?.id, { id: currency!, name: currency!, symbol: currency! }) || 0), 0);
+		return ammout
+	}
+
+	const renderWalletItem = async ({ item }: { item: Wallet }) => (
 		<TouchableOpacity style={styles.walletItem} onPress={() => handleWalletPress(item)}>
 			<View>
 				<Text style={styles.walletName}>{item.name}</Text>
-				<Text style={styles.walletTotal}>Total de Tokens: {item.tokens.length}</Text>
+				<Text style={styles.walletName}>{await walletAmount(item.id)}</Text>
 			</View>
-			<TouchableOpacity onPress={() => handleDeleteWallet(item.id)}>
-				<Feather name="trash" size={24} color="red" />
+			<TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteWallet(item.id)}>
+				<Feather name="trash" size={24} color={theme.text} />
 			</TouchableOpacity>
 			{/* Aqui você pode adicionar mais informações sobre os tokens */}
 		</TouchableOpacity>
@@ -111,23 +118,30 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>Carteiras</Text>
-			<TouchableOpacity style={styles.createButton} onPress={handleCreateWallet}>
-				<Feather name="plus-circle" size={24} color="green" />
-				<Text style={styles.createButtonText}> Criar Carteira</Text>
-			</TouchableOpacity>
-			<FlatList
-				data={wallets}
-				renderItem={renderWalletItem}
-				keyExtractor={(item) => item.id}
+			<View style={styles.header}>
 
-			/>
-			<TouchableOpacity onPress={handleOpenSettingsModal}>
-				<Text style={styles.createButtonText}>Open Settings</Text>
-			</TouchableOpacity>
-			<TouchableOpacity style={styles.createButtonText} onPress={handleClearStorage}>
-				<Feather name="trash-2" size={24} color={theme.text} />
-			</TouchableOpacity>
+				<Text style={styles.title}>Carteiras</Text>
+
+				<TouchableOpacity style={styles.iconButton} onPress={handleOpenSettingsModal}>
+					<Feather name='settings' size={24} color={theme.text} />
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.iconButton} onPress={handleClearStorage}>
+					<Feather name="trash-2" size={24} color={theme.text} />
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.iconButton} onPress={handleCreateWallet}>
+					<Feather name="plus-circle" size={24} color={theme.text} />
+				</TouchableOpacity>
+			</View>
+			<View>
+
+				<FlatList
+					data={wallets}
+					renderItem={renderWalletItem}
+					keyExtractor={(item) => item.id}
+
+				/>
+			</View>
+
 
 			<SettingsModal
 				visible={settingsModalVisible}
@@ -147,11 +161,24 @@ const styles = StyleSheet.create({
 		padding: 20,
 		backgroundColor: theme.background,
 	},
+	header: {
+		borderWidth: 1,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		marginBottom: 20,
+	},
 	title: {
 		fontSize: 24,
 		fontWeight: 'bold',
-		marginBottom: 20,
-		color: theme.text
+		color: theme.text,
+		flex: 1
+	},
+	iconButton: {
+		display: 'flex',
+		flexDirection: 'row',
+		gap: 10,
+		padding: 5,
 	},
 	walletItem: {
 		display: 'flex',
@@ -161,7 +188,8 @@ const styles = StyleSheet.create({
 		padding: 15,
 		borderBottomWidth: 1,
 		borderBottomColor: theme.border,
-		color: theme.text
+		color: theme.text,
+		backgroundColor: theme.cardBackground
 	},
 	walletName: {
 		fontSize: 16,
@@ -179,10 +207,9 @@ const styles = StyleSheet.create({
 		marginBottom: 20,
 	},
 	createButtonText: {
-
 		fontSize: 18,
 		marginLeft: 10,
-		color: theme.accent,
+		color: theme.text,
 	},
 });
 

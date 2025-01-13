@@ -26,7 +26,6 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const [currency, setCurrency] = useState<Currency | null>(initialCurrency);
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState<string | null>(null);
-	const [isPrimaryPickerVisible, setIsPrimaryPickerVisible] = useState(false);
 	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 
 	// Efeitos

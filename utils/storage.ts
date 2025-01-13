@@ -181,3 +181,10 @@ const removeTokensByWalletId = async (walletId: string) => {
     tokens && tokens.filter((token) => token.walletId !== walletId);
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTokens));
 };
+
+export const loadTokensByWalletId = async (walletId: string) => {
+  const tokens = await loadTokens();
+  const walletTokens =
+    tokens && tokens.filter((token) => token.walletId === walletId);
+  return walletTokens;
+};
