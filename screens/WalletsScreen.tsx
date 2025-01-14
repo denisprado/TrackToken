@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { clearStorage, fetchWallets, loadCurrency, loadTokensByWalletId, removeWallet } from '../utils/storage'; // Função para buscar carteiras
 import { Feather } from '@expo/vector-icons'; // Importando Feather para ícones
 import { theme } from '../utils/theme';
@@ -14,6 +14,7 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
 	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState<string | null>(null);
+	const [walletData, setWalletData] = useState<{ [key: string]: { amount: number, percentageChange: number, tokenImages: string[] } }>({});
 
 	const loadWallets = async () => {
 		const loadedWallets = await fetchWallets(); // Carregar carteiras do armazenamento
@@ -38,14 +39,11 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 		navigation.navigate('CreateWalletScreen'); // Navegar para a tela de criação de carteira
 	};
 
-
-
 	useEffect(() => {
 		const loadInitialCurrency = async () => {
 			const savedCurrency = await loadCurrency();
 			setCurrency({ id: savedCurrency!, name: savedCurrency!, symbol: savedCurrency! });
 		};
-
 
 		const fetchCurrenciesData = async () => {
 			const data = await fetchCurrencies();
@@ -56,6 +54,15 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 		fetchCurrenciesData();
 		loadInitialCurrency();
 	}, []);
+
+	const formattedCurrencyTotalAmount = (ammount: number) => {
+		return ammount !== null
+			? new Intl.NumberFormat('pt-BR', {
+				style: 'currency',
+				currency: currency?.symbol || 'usd', // Usar 'usd' como padrão se currency não estiver definido
+			}).format(ammount)
+			: 'Loading...'
+	};
 
 	const handleDeleteWallet = async (walletId: string) => {
 		Alert.alert(
@@ -100,32 +107,65 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	const walletAmount = async (walletId: string) => {
 		const tokens = await loadTokensByWalletId(walletId);
 		let amount = 0;
+		let percentageChange = 0;
+		const tokenImages: string[] = [];
+
 		for (const token of tokens || []) {
 			const price = await fetchTokenPrice(token.tokenCoin?.id!, currency);
-			amount += token.totalAmount * (price || 0);
+			percentageChange += token.percentageChange!;
+
+			for (const addition of token.additions || []) {
+				amount += addition.amount * (price || 0);
+			}
+
+			if (token.tokenCoin?.image) {
+				tokenImages.push(token.tokenCoin.image);
+			}
 		}
-		return amount;
+
+		return { amount, percentageChange, tokenImages };
 	}
 
-	const renderWalletItem = async ({ item }: { item: Wallet }) => (
+	const loadWalletAmounts = async () => {
+		const data: { [key: string]: { amount: number, percentageChange: number, tokenImages: string[] } } = {};
+		for (const wallet of wallets) {
+			data[wallet.id] = await walletAmount(wallet.id);
+		}
+		setWalletData(data);
+	};
+
+	useEffect(() => {
+		loadWallets();
+	}, []);
+
+	useEffect(() => {
+		if (wallets.length > 0) {
+			loadWalletAmounts();
+		}
+	}, [wallets]);
+
+	const renderWalletItem = ({ item }: { item: Wallet }) => (
 		<TouchableOpacity style={styles.walletItem} onPress={() => handleWalletPress(item)}>
 			<View>
 				<Text style={styles.walletName}>{item.name}</Text>
-				<Text style={styles.walletName}>{await walletAmount(item.id)}</Text>
+				<Text style={styles.walletName}>{formattedCurrencyTotalAmount(walletData[item.id]?.amount || 0)}</Text>
+				<Text style={styles.walletTotal}>Mudança: {walletData[item.id]?.percentageChange || 0}%</Text>
+				<View style={styles.tokenImagesContainer}>
+					{walletData[item.id]?.tokenImages.map((image, index) => (
+						<Image key={index} source={{ uri: image }} style={styles.tokenImage} />
+					))}
+				</View>
 			</View>
 			<TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteWallet(item.id)}>
 				<Feather name="trash" size={24} color={theme.text} />
 			</TouchableOpacity>
-			{/* Aqui você pode adicionar mais informações sobre os tokens */}
 		</TouchableOpacity>
 	);
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.header}>
-
 				<Text style={styles.title}>Carteiras</Text>
-
 				<TouchableOpacity style={styles.iconButton} onPress={handleOpenSettingsModal}>
 					<Feather name='settings' size={24} color={theme.text} />
 				</TouchableOpacity>
@@ -137,15 +177,12 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 				</TouchableOpacity>
 			</View>
 			<View>
-
 				<FlatList
 					data={wallets}
 					renderItem={renderWalletItem}
 					keyExtractor={(item) => item.id}
-
 				/>
 			</View>
-
 
 			<SettingsModal
 				visible={settingsModalVisible}
@@ -166,7 +203,7 @@ const styles = StyleSheet.create({
 		backgroundColor: theme.background,
 	},
 	header: {
-		borderWidth: 1,
+
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
@@ -190,6 +227,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-between',
 		alignItems: 'center',
 		padding: 15,
+		margin: 10,
 		borderBottomWidth: 1,
 		borderBottomColor: theme.border,
 		color: theme.text,
@@ -199,6 +237,15 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: theme.text,
 		fontWeight: 'bold',
+	},
+	tokenImagesContainer: {
+		flexDirection: 'row',
+		marginTop: 5,
+	},
+	tokenImage: {
+		width: 30,
+		height: 30,
+		marginRight: 5,
 	},
 	walletTotal: {
 		fontSize: 12,

@@ -73,9 +73,10 @@ const styles = StyleSheet.create({
 	itemContainer: {
 		paddingVertical: 8,
 		paddingLeft: 10,
+		marginHorizontal: 15,
+		marginVertical: 8,
 		borderBottomWidth: 1,
 		borderBottomColor: theme.border,
-		gap: 10,
 		flexDirection: 'row',
 		alignItems: 'center',
 		backgroundColor: theme.cardBackground,

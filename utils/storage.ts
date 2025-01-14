@@ -23,7 +23,10 @@ export const saveToken = async (
 
     // Encontra o índice do token existente
     const existingTokenIndex =
-      existingTokens && existingTokens.findIndex((t) => t.id === token.id);
+      existingTokens &&
+      existingTokens.findIndex(
+        (t) => t.id === token.id && t.walletId === token.walletId
+      );
 
     // Cria uma nova adição de token
     const newTokenAddition: TokenAddition = {
