@@ -1,10 +1,10 @@
-import React from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { Feather } from '@expo/vector-icons';
-import { Currency } from '../types/types';
-import { useTheme } from '../context/ThemeContext';
+import { Picker } from '@react-native-picker/picker';
+import React, { useContext } from 'react';
+import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import useThemedStyles from '../hooks/useThemedStyles';
+import { Currency } from '../types/types';
+import { CurrencyContext } from '../context/CurrencyContext';
 
 interface SettingsModalProps {
 	visible: boolean;
@@ -24,7 +24,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	onConfirm,
 }) => {
 	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
+	const { currency, setCurrency } = useContext(CurrencyContext) as { currency: Currency, setCurrency: (currency: Currency) => void };
 
+	const handleCurrencyChange = (newCurrency: string) => {
+		setCurrency({ id: newCurrency, name: newCurrency, symbol: newCurrency });
+	};
 	return (
 		<Modal
 			animationType="slide"
@@ -41,9 +45,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 							<Text style={styles.selectText}>{selectedCurrency}</Text>
 						</TouchableOpacity>
 						<Picker
-							selectedValue={selectedCurrency!}
-							onValueChange={onCurrencyChange}
-							style={[styles.picker, { minWidth: '100%', height: 150 }]}
+							selectedValue={currency.id ? currency.id : selectedCurrency!}
+							onValueChange={handleCurrencyChange}
+							style={[styles.picker, { minWidth: '100%', height: 50 }]}
 						>
 							{currencies.map(currency => (
 								<Picker.Item key={currency.id} label={`${currency.name} (${currency.symbol.toUpperCase()})`} value={currency.id} />

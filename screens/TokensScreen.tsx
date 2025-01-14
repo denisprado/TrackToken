@@ -6,7 +6,7 @@ import SettingsModal from '../components/SettingsModal';
 import TokenItem from '../components/TokenItem';
 import { Currency, TokenAddition, TokenData } from '../types/types';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { loadCurrency, loadTokens, removeWallet, saveCurrency } from '../utils/storage';
+import { CURRENCY, loadCurrency, loadTokens, removeWallet, saveCurrency } from '../utils/storage';
 // Definições de tipos
 import { useTheme } from '../context/ThemeContext';
 import useThemedStyles from '../hooks/useThemedStyles';
@@ -19,12 +19,12 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const routes = route.params; // Obter o ID da carteira
 	const walletId = routes && routes.walletId
 	const walletName = routes && routes.walletName; // Obtendo o nome da carteira a partir dos parâmetros
-	const initialCurrency = routes && routes.initialCurrency;
+	//const initialCurrency = routes && routes.initialCurrency;
 
 	const [tokens, setTokens] = useState<TokenData[]>([]);
 	const [loading, setLoading] = useState(true);
 	const updateInterval = useRef<any>(null);
-	const [currency, setCurrency] = useState<Currency | null>(initialCurrency);
+	const [currency, setCurrency] = useState<Currency>({ id: CURRENCY, name: CURRENCY, symbol: CURRENCY });
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState<string | null>(null);
 	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
@@ -32,7 +32,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 	// Efeitos
 	useEffect(() => {
 		loadTokensForWallet();
-	}, [currency]);
+	}, [currency, walletId, tempPrimaryCurrency, navigation]);
 
 	useFocusEffect(
 		React.useCallback(() => {
@@ -67,14 +67,19 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 	const findCurrencyBySymbol = (symbolToFind: string) => {
 		const currencyToFind = currencies.find(({ symbol }) => symbol === symbolToFind.toLowerCase())
-		return currencyToFind!
+		return currencyToFind
 	}
 
 	useEffect(() => {
 		const loadInitialCurrency = async () => {
 			const savedCurrency = await loadCurrency();
 			const currency = findCurrencyBySymbol(savedCurrency!)
-			setCurrency(currency!);
+			if (!currency) {
+				setCurrency({ id: CURRENCY, name: CURRENCY, symbol: CURRENCY });
+			} else {
+
+				setCurrency(currency);
+			}
 		};
 
 
@@ -101,7 +106,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 						const price = await fetchTokenPrice(token.id, currency!);
 						const totalAmount = calculateTotalAmount(token.additions);
-						const { percentageChange } = await calculatePercentageChange(token.additions, price)
+						const { percentageChange } = await calculatePercentageChange(token.additions, price);
 
 						return {
 							...token,
@@ -147,7 +152,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 		// Verifica se os preços atuais estão disponíveis
 
 		if (!currentPriceCurrency1 || additions.length === 0 || !currency) {
-			console.log("Preços atuais ou adições não disponíveis.");
+			console.log("Preços atuais ou adições não disponíveis.", currentPriceCurrency1, additions.length, currency);
 			return { percentageChange: null };
 		}
 
@@ -242,7 +247,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 							onPress={() => handleTokenPress(item.id)}
 							totalAmount={item.totalAmount.toString()}
 							tokenCoin={item.tokenCoin!}
-							currencyPercentageChange={item.percentageChange}
+							currencyPercentageChange={item.percentageChange!}
 							currencyTotalAmount={item.currentValue}
 							currency={currency}
 							percentageOfWallet={item.percentageOfWallet}

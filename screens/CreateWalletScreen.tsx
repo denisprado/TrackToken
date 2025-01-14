@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { Alert, Button, Text, TextInput, View } from 'react-native';
 import { fetchWallets, saveWallet } from '../utils/storage'; // Função para salvar carteiras
-
-import { useTheme } from '../context/ThemeContext';
 import useThemedStyles from '../hooks/useThemedStyles';
 
 const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
@@ -24,7 +22,8 @@ const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 		try {
 			await saveWallet(newWallet); // Salvar a nova carteira
 			fetchWallets();
-			navigation.goBack(); // Voltar para a tela anterior
+			navigation.navigate('Tokens', { walletId: newWallet.id, walletName: newWallet.name });
+			//navigation.goBack(); // Voltar para a tela anterior
 		} catch (error) {
 			Alert.alert('Erro', 'Falha ao criar a carteira.');
 		}
@@ -32,20 +31,19 @@ const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>Criar Nova Carteira</Text>
-			<TextInput
-				style={styles.input}
-				placeholder="Nome da Carteira"
-				value={walletName}
-				onChangeText={setWalletName}
-			/>
+			<View>
+
+				<Text style={styles.title}>Criar Nova Carteira</Text>
+				<TextInput
+					style={styles.input}
+					placeholder="Nome da Carteira"
+					value={walletName}
+					onChangeText={setWalletName}
+				/>
+			</View>
 			<Button title="Criar Carteira" onPress={handleCreateWallet} />
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-
-});
 
 export default CreateWalletScreen; 

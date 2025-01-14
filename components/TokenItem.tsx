@@ -12,7 +12,7 @@ interface TokenItemProps {
 	totalAmount: string;
 	percentageOfWallet: number;
 	currencyTotalAmount: number | null;
-	currencyPercentageChange: number | null;
+	currencyPercentageChange: number;
 	currency: Currency | null;
 	onPress: () => void;
 }

@@ -1,15 +1,15 @@
 import { Feather } from '@expo/vector-icons'; // Importando Feather para ícones
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import { Alert, FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import SettingsModal from '../components/SettingsModal';
 import { Currency, Wallet, WalletData } from '../types/types';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { clearStorage, fetchWallets, loadCurrency, loadTokensByWalletId } from '../utils/storage'; // Função para buscar carteiras
+import { clearStorage, CURRENCY, fetchWallets, loadCurrency, loadTokensByWalletId, saveCurrency } from '../utils/storage'; // Função para buscar carteiras
 
 import { useTheme } from '../context/ThemeContext';
 import useThemedStyles from '../hooks/useThemedStyles';
-import theme from '../utils/theme';
+import { CurrencyContext } from '../context/CurrencyContext';
 
 
 const WalletsScreen = ({ navigation }: { navigation: any }) => {
@@ -18,12 +18,13 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
 
 	const [wallets, setWallets] = useState<Wallet[]>([]);
-	const [currency, setCurrency] = useState<Currency | null>(null);
+	const currencyContextValues = useContext(CurrencyContext);
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
 	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState<string | null>(null);
 	const [walletData, setWalletData] = useState<WalletData>();
 
+	const currency = currencyContextValues?.currency?.symbol;
 	const loadWallets = async () => {
 		const loadedWallets = await fetchWallets(); // Carregar carteiras do armazenamento
 		setWallets(loadedWallets);
@@ -32,12 +33,15 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	useFocusEffect(
 		React.useCallback(() => {
 			loadWallets();
-		}, [])
+
+		}, [currency])
 	);
 
 	useEffect(() => {
 		loadWallets();
-	}, []);
+
+	}, [currency]);
+
 
 	const handleWalletPress = (wallet: Wallet) => {
 		navigation.navigate('Tokens', { walletId: wallet.id, walletName: wallet.name, initialCurrency: currency }); // Navegar para a tela de tokens
@@ -47,12 +51,8 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 		navigation.navigate('CreateWalletScreen'); // Navegar para a tela de criação de carteira
 	};
 
-	useEffect(() => {
-		const loadInitialCurrency = async () => {
-			const savedCurrency = await loadCurrency();
-			setCurrency({ id: savedCurrency!, name: savedCurrency!, symbol: savedCurrency! });
-		};
 
+	useEffect(() => {
 		const fetchCurrenciesData = async () => {
 			const data = await fetchCurrencies();
 			if (data) {
@@ -60,14 +60,17 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 			}
 		};
 		fetchCurrenciesData();
-		loadInitialCurrency();
 	}, []);
+
+	useEffect(() => {
+		loadWalletAmounts();
+	}, [currency]);
 
 	const formattedCurrencyTotalAmount = (ammount: number) => {
 		return ammount !== null
 			? new Intl.NumberFormat('pt-BR', {
 				style: 'currency',
-				currency: currency?.symbol || 'usd', // Usar 'usd' como padrão se currency não estiver definido
+				currency: currency || CURRENCY, // Usar 'usd' como padrão se currency não estiver definido
 			}).format(ammount)
 			: 'Loading...'
 	};
@@ -78,6 +81,7 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 
 	const handleCloseSettingsModal = () => {
 		setSettingsModalVisible(false);
+		loadWallets();
 	};
 
 	const handleConfirmCurrencySelection = () => {
@@ -98,7 +102,7 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 		const tokenImages: string[] = [];
 
 		for (const token of tokens || []) {
-			const price = await fetchTokenPrice(token.tokenCoin?.id!, currency);
+			const price = await fetchTokenPrice(token.tokenCoin?.id!, { id: CURRENCY, symbol: CURRENCY, name: CURRENCY }!);
 
 			for (const addition of token.additions || []) {
 				const currentPrice = price || 0;
