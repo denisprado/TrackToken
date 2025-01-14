@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
-import { clearStorage, fetchWallets, loadCurrency, loadTokensByWalletId, removeWallet } from '../utils/storage'; // Função para buscar carteiras
 import { Feather } from '@expo/vector-icons'; // Importando Feather para ícones
-import { theme } from '../utils/theme';
-import { Currency, Wallet } from '../types/types';
 import { useFocusEffect } from '@react-navigation/native';
-import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
+import React, { useEffect, useState } from 'react';
+import { Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import SettingsModal from '../components/SettingsModal';
+import { Currency, Wallet } from '../types/types';
+import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
+import { clearStorage, fetchWallets, loadCurrency, loadTokensByWalletId } from '../utils/storage'; // Função para buscar carteiras
+import { theme } from '../utils/theme';
 
 const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -14,7 +14,7 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
 	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState<string | null>(null);
-	const [walletData, setWalletData] = useState<{ [key: string]: { amount: number, percentageChange: number, tokenImages: string[] } }>({});
+	const [walletData, setWalletData] = useState<{ [key: string]: { amount: number, percentageChange: string, tokenImages: string[] } }>({});
 
 	const loadWallets = async () => {
 		const loadedWallets = await fetchWallets(); // Carregar carteiras do armazenamento
@@ -64,27 +64,6 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 			: 'Loading...'
 	};
 
-	const handleDeleteWallet = async (walletId: string) => {
-		Alert.alert(
-			'Confirmar Exclusão',
-			'Você tem certeza que deseja excluir esta carteira?',
-			[
-				{
-					text: 'Cancelar',
-					style: 'cancel',
-				},
-				{
-					text: 'Excluir',
-					onPress: async () => {
-						await removeWallet(walletId);
-						loadWallets(); // Recarrega as carteiras após a exclusão
-					},
-				},
-			],
-			{ cancelable: false }
-		);
-	};
-
 	const handleOpenSettingsModal = () => {
 		setSettingsModalVisible(true);
 	};
@@ -112,10 +91,18 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 
 		for (const token of tokens || []) {
 			const price = await fetchTokenPrice(token.tokenCoin?.id!, currency);
-			percentageChange += token.percentageChange!;
 
 			for (const addition of token.additions || []) {
-				amount += addition.amount * (price || 0);
+				const currentPrice = price || 0;
+				const purchasePrice = addition.priceAtPurchaseCurrency1 || 0;
+
+				// Cálculo do amount
+				amount += addition.amount * currentPrice;
+
+				// Cálculo do percentageChange
+				if (addition.amount > 0) {
+					percentageChange += ((currentPrice - purchasePrice) / purchasePrice) * 100; // Cálculo percentual
+				}
 			}
 
 			if (token.tokenCoin?.image) {
@@ -123,11 +110,11 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 			}
 		}
 
-		return { amount, percentageChange, tokenImages };
+		return { amount, percentageChange: percentageChange.toFixed(2), tokenImages };
 	}
 
 	const loadWalletAmounts = async () => {
-		const data: { [key: string]: { amount: number, percentageChange: number, tokenImages: string[] } } = {};
+		const data: { [key: string]: { amount: number, percentageChange: string, tokenImages: string[] } } = {};
 		for (const wallet of wallets) {
 			data[wallet.id] = await walletAmount(wallet.id);
 		}
@@ -156,8 +143,9 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 					))}
 				</View>
 			</View>
-			<TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteWallet(item.id)}>
-				<Feather name="trash" size={24} color={theme.text} />
+
+			<TouchableOpacity style={styles.iconButton} onPress={() => handleWalletPress(item)}>
+				<Feather name="chevron-right" size={18} color={theme.colors.secondaryText} />
 			</TouchableOpacity>
 		</TouchableOpacity>
 	);
@@ -167,13 +155,13 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 			<View style={styles.header}>
 				<Text style={styles.title}>Carteiras</Text>
 				<TouchableOpacity style={styles.iconButton} onPress={handleOpenSettingsModal}>
-					<Feather name='settings' size={24} color={theme.text} />
+					<Feather name='settings' size={24} color={theme.colors.text} />
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.iconButton} onPress={handleClearStorage}>
-					<Feather name="trash-2" size={24} color={theme.text} />
+					<Feather name="trash-2" size={24} color={theme.colors.text} />
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.iconButton} onPress={handleCreateWallet}>
-					<Feather name="plus-circle" size={24} color={theme.text} />
+					<Feather name="plus-circle" size={24} color={theme.colors.text} />
 				</TouchableOpacity>
 			</View>
 			<View>
@@ -199,68 +187,69 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 20,
-		backgroundColor: theme.background,
+		padding: theme.spacing.xlarge,
+		backgroundColor: theme.colors.background,
 	},
 	header: {
 
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
-		marginBottom: 20,
+		marginBottom: theme.spacing.xlarge,
 	},
 	title: {
-		fontSize: 24,
+		fontSize: theme.fontSizes.xlarge,
 		fontWeight: 'bold',
-		color: theme.text,
+		color: theme.colors.text,
 		flex: 1
 	},
 	iconButton: {
 		display: 'flex',
 		flexDirection: 'row',
-		gap: 10,
-		padding: 5,
+		gap: theme.spacing.medium,
+		padding: theme.spacing.small,
 	},
 	walletItem: {
 		display: 'flex',
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
-		padding: 15,
-		margin: 10,
+		padding: theme.spacing.large,
+		margin: theme.spacing.medium,
+		borderRadius: theme.spacing.medium,
 		borderBottomWidth: 1,
-		borderBottomColor: theme.border,
-		color: theme.text,
-		backgroundColor: theme.cardBackground
+		borderBottomColor: theme.colors.border,
+		color: theme.colors.text,
+		backgroundColor: theme.colors.cardBackground
 	},
 	walletName: {
-		fontSize: 16,
-		color: theme.text,
+		fontSize: theme.fontSizes.large,
+		color: theme.colors.text,
 		fontWeight: 'bold',
 	},
 	tokenImagesContainer: {
 		flexDirection: 'row',
-		marginTop: 5,
+		marginTop: theme.spacing.small,
 	},
 	tokenImage: {
 		width: 30,
 		height: 30,
-		marginRight: 5,
+		marginRight: theme.spacing.small,
 	},
 	walletTotal: {
-		fontSize: 12,
-		color: theme.text,
+		fontSize: theme.fontSizes.small,
+		color: theme.colors.text,
 		fontWeight: 'normal',
 	},
 	createButton: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		marginBottom: 20,
+		marginBottom: theme.spacing.xlarge,
 	},
 	createButtonText: {
-		fontSize: 18,
-		marginLeft: 10,
-		color: theme.text,
+		fontSize: theme.fontSizes.large,
+		marginLeft: theme.spacing.medium,
+		color: theme.colors.text,
 	},
 });
 

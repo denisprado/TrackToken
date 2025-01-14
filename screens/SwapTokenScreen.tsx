@@ -219,13 +219,13 @@ const SwapTokenScreen = () => {
 			<View style={styles.inputContainer}>
 				<Text style={styles.label}>Amount:</Text>
 				<TextInput
-					style={[styles.input, { color: theme.text }]}
+					style={[styles.input, { color: theme.colors.text }]}
 					keyboardType="numeric"
 					value={fromAmount}
 					onChangeText={setFromAmount}
 					placeholder="Enter amount"
-					placeholderTextColor={theme.secondaryText}
-					selectionColor={theme.secondaryText}
+					placeholderTextColor={theme.colors.secondaryText}
+					selectionColor={theme.colors.secondaryText}
 				/>
 			</View>
 
@@ -245,13 +245,13 @@ const SwapTokenScreen = () => {
 			{toAmount ? (
 				<View style={styles.inputContainer}>
 					<Text style={styles.label}>Amount to Receive:</Text>
-					<Text style={[styles.calculatedAmount, { color: theme.text }]}>
+					<Text style={[styles.calculatedAmount, { color: theme.colors.text }]}>
 						{toAmount}
 					</Text>
 				</View>
 			) : null}
 
-			<Button title="Swap Tokens" onPress={handleSwapTokens} disabled={isCalculating} color={theme.primary} />
+			<Button title="Swap Tokens" onPress={handleSwapTokens} disabled={isCalculating} color={theme.colors.primary} />
 			<Modal
 				animationType="slide"
 				transparent={true}
@@ -293,48 +293,48 @@ const SwapTokenScreen = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 20,
-		backgroundColor: theme.background,
+		padding: theme.spacing.xlarge,
+		backgroundColor: theme.colors.background,
 	},
 	title: {
-		fontSize: 24,
+		fontSize: theme.fontSizes.xlarge,
 		fontWeight: 'bold',
-		marginBottom: 20,
+		marginBottom: theme.spacing.xlarge,
 		textAlign: 'center',
-		color: theme.text,
+		color: theme.colors.text,
 	},
 	inputContainer: {
-		marginBottom: 10,
+		marginBottom: theme.spacing.medium,
 	},
 	label: {
-		fontSize: 16,
-		marginBottom: 5,
-		color: theme.text,
+		fontSize: theme.fontSizes.large,
+		marginBottom: theme.spacing.small,
+		color: theme.colors.text,
 	},
 	calculatedAmount: {
-		fontSize: 16,
+		fontSize: theme.fontSizes.large,
 	},
 	input: {
 		height: 40,
-		backgroundColor: theme.inputBackground,
-		borderColor: theme.border,
+		backgroundColor: theme.colors.inputBackground,
+		borderColor: theme.colors.border,
 		borderWidth: 1,
-		padding: 10,
-		borderRadius: 5,
+		padding: theme.spacing.medium,
+		borderRadius: theme.spacing.small,
 	},
 	selectButton: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
 		height: 40,
-		backgroundColor: theme.inputBackground,
-		borderColor: theme.border,
+		backgroundColor: theme.colors.inputBackground,
+		borderColor: theme.colors.border,
 		borderWidth: 1,
-		padding: 10,
-		borderRadius: 5,
+		padding: theme.spacing.medium,
+		borderRadius: theme.spacing.small,
 	},
 	selectText: {
-		fontSize: 16,
+		fontSize: theme.fontSizes.large,
 	},
 	centeredView: {
 		flex: 1,
@@ -343,10 +343,10 @@ const styles = StyleSheet.create({
 		backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent
 	},
 	modalView: {
-		margin: 20,
-		backgroundColor: theme.cardBackground,
-		borderRadius: 10,
-		padding: 20,
+		margin: theme.spacing.xlarge,
+		backgroundColor: theme.colors.cardBackground,
+		borderRadius: theme.spacing.medium,
+		padding: theme.spacing.xlarge,
 		shadowColor: '#000',
 		shadowOffset: {
 			width: 0,
@@ -354,43 +354,43 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.25,
 		shadowRadius: 4,
-		elevation: 5,
+		elevation: theme.spacing.small,
 	},
 	searchContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		borderBottomWidth: 1,
 		borderBottomColor: '#eee',
-		marginBottom: 10,
+		marginBottom: theme.spacing.medium,
 	},
 	searchIcon: {
-		marginRight: 10
+		marginRight: theme.spacing.medium
 	},
 	searchInput: {
 		flex: 1,
 		height: 40,
-		paddingVertical: 5,
+		paddingVertical: theme.spacing.small,
 	},
 	modalClose: {
-		paddingLeft: 10
+		paddingLeft: theme.spacing.medium
 	},
 	tokenItem: {
-		padding: 10,
+		padding: theme.spacing.medium,
 		borderBottomWidth: 1,
 		borderBottomColor: '#eee',
 	},
 	tokenItemText: {
-		fontSize: 16,
+		fontSize: theme.fontSizes.large,
 	},
 	pickerContainer: {
-		marginBottom: 10,
+		marginBottom: theme.spacing.medium,
 		borderWidth: 1,
-		borderColor: theme.border,
-		borderRadius: 5,
+		borderColor: theme.colors.border,
+		borderRadius: theme.spacing.small,
 	},
 	picker: {
 		height: 50,
-		backgroundColor: theme.inputBackground
+		backgroundColor: theme.colors.inputBackground
 	}
 });
 

@@ -2,11 +2,11 @@ import { Feather } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import TokenItem from '../components/TokenItem';
 import { Currency, TokenAddition, TokenData } from '../types/types';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { loadCurrency, loadTokens, saveCurrency } from '../utils/storage';
+import { loadCurrency, loadTokens, removeWallet, saveCurrency } from '../utils/storage';
 import { theme } from '../utils/theme';
 import SettingsModal from '../components/SettingsModal';
 // Definições de tipos
@@ -193,6 +193,27 @@ const TokensScreen = ({ route }: { route: any }) => {
 	};
 
 
+	const handleDeleteWallet = async (walletId: string) => {
+		Alert.alert(
+			'Confirmar Exclusão',
+			'Você tem certeza que deseja excluir esta carteira?',
+			[
+				{
+					text: 'Cancelar',
+					style: 'cancel',
+				},
+				{
+					text: 'Excluir',
+					onPress: async () => {
+						await removeWallet(walletId);
+						navigation.navigate('Wallets'); // Recarrega as carteiras após a exclusão
+					},
+				},
+			],
+			{ cancelable: false }
+		);
+	};
+
 
 	return (
 		<View style={styles.container}>
@@ -200,20 +221,23 @@ const TokensScreen = ({ route }: { route: any }) => {
 				<Text style={styles.title}>{walletName}</Text>
 
 				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddToken', { walletId: walletId })}>
-					<Feather name="plus-circle" size={24} color={theme.text} />
+					<Feather name="plus-circle" size={24} color={theme.colors.text} />
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.iconButton} onPress={() => loadTokensForWallet()}>
-					<Feather name="refresh-ccw" size={24} color={theme.text} />
+					<Feather name="refresh-ccw" size={24} color={theme.colors.text} />
+				</TouchableOpacity>
+				<TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteWallet(walletId)}>
+					<Feather name="trash" size={24} color={theme.colors.text} />
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.iconButton} onPress={handleOpenSettingsModal}>
-					<Feather name="settings" size={24} color={theme.text} />
+					<Feather name="settings" size={24} color={theme.colors.text} />
 					<Text style={styles.label}>({currency?.symbol.toUpperCase()})</Text>
 				</TouchableOpacity>
 			</View>
 
 			{loading ? (
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={theme.accent} />
+					<ActivityIndicator size="large" color={theme.colors.accent} />
 				</View>
 			) : (
 				<FlatList
@@ -252,26 +276,26 @@ const TokensScreen = ({ route }: { route: any }) => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 20,
-		backgroundColor: theme.background,
+		padding: theme.spacing.xlarge,
+		backgroundColor: theme.colors.background,
 	},
 	header: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
-		marginBottom: 20,
+		marginBottom: theme.spacing.xlarge,
 	},
 	title: {
-		fontSize: 24,
+		fontSize: theme.fontSizes.xlarge,
 		fontWeight: 'bold',
-		color: theme.text,
+		color: theme.colors.text,
 		flex: 1
 	},
 	iconButton: {
 		display: 'flex',
 		flexDirection: 'row',
-		gap: 10,
-		padding: 5,
+		gap: theme.spacing.medium,
+		padding: theme.spacing.small,
 	},
 	loadingContainer: {
 		flex: 1,
@@ -282,13 +306,13 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+		backgroundColor: theme.colors.background,
 	},
 	modalView: {
-		margin: 20,
-		backgroundColor: theme.cardBackground,
-		borderRadius: 10,
-		padding: 20,
+		margin: theme.spacing.xlarge,
+		backgroundColor: theme.colors.cardBackground,
+		borderRadius: theme.spacing.medium,
+		padding: theme.spacing.xlarge,
 		shadowColor: '#000',
 		shadowOffset: {
 			width: 0,
@@ -296,69 +320,69 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.25,
 		shadowRadius: 4,
-		elevation: 5,
+		elevation: theme.spacing.small,
 	},
 	modalClose: {
 		position: 'absolute',
-		top: 10,
-		right: 10,
+		top: theme.spacing.medium,
+		right: theme.spacing.medium,
 	},
 	modalTitle: {
-		fontSize: 20,
+		fontSize: theme.fontSizes.xlarge,
 		fontWeight: 'bold',
-		color: theme.text,
-		marginBottom: 10,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.medium,
 	},
 	inputContainer: {
-		marginBottom: 10,
+		marginBottom: theme.spacing.medium,
 	},
 	label: {
-		fontSize: 16,
-		color: theme.text,
-		marginBottom: 5,
+		fontSize: theme.fontSizes.large,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.small,
 	},
 	input: {
 		height: 40,
-		backgroundColor: theme.inputBackground,
-		borderColor: theme.border,
+		backgroundColor: theme.colors.inputBackground,
+		borderColor: theme.colors.border,
 		borderWidth: 1,
-		padding: 10,
-		borderRadius: 5,
+		padding: theme.spacing.medium,
+		borderRadius: theme.spacing.small,
 	},
 	listStyle: {
-		marginHorizontal: -20,
+		marginHorizontal: -theme.spacing.xlarge,
 	},
 	buttonContainer: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
-		marginTop: 10
+		marginTop: theme.spacing.medium
 	},
 	picker: {
 		height: 50,
-		backgroundColor: theme.inputBackground,
-		color: theme.text,
+		backgroundColor: theme.colors.inputBackground,
+		color: theme.colors.text,
 	},
 	confirmButton: {
-		backgroundColor: theme.primary,
-		padding: 10,
-		borderRadius: 5,
-		marginTop: 10,
+		backgroundColor: theme.colors.primary,
+		padding: theme.spacing.medium,
+		borderRadius: theme.spacing.small,
+		marginTop: theme.spacing.medium,
 		alignItems: 'center',
 		zIndex: 1,
 	},
 	confirmButtonText: {
-		color: theme.text,
+		color: theme.colors.text,
 		fontWeight: 'bold',
 	},
 	selectText: {
-		fontSize: 16,
-		color: theme.text,
-		padding: 10,
+		fontSize: theme.fontSizes.large,
+		color: theme.colors.text,
+		padding: theme.spacing.medium,
 		borderWidth: 1,
-		borderColor: theme.border,
-		borderRadius: 5,
+		borderColor: theme.colors.border,
+		borderRadius: theme.spacing.small,
 		textAlign: 'center',
-		marginBottom: 10,
+		marginBottom: theme.spacing.medium,
 	},
 });
 

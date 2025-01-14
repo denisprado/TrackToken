@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import { fetchWallets, saveWallet } from '../utils/storage'; // Função para salvar carteiras
+import theme from '../utils/theme';
 
 const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 	const [walletName, setWalletName] = useState('');
@@ -43,20 +44,20 @@ const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 20,
+		padding: theme.spacing.xlarge,
 		backgroundColor: '#fff',
 	},
 	title: {
-		fontSize: 24,
+		fontSize: theme.fontSizes.xlarge,
 		fontWeight: 'bold',
-		marginBottom: 20,
+		marginBottom: theme.spacing.xlarge,
 	},
 	input: {
 		height: 40,
 		borderColor: '#ccc',
 		borderWidth: 1,
-		marginBottom: 20,
-		paddingHorizontal: 10,
+		marginBottom: theme.spacing.xlarge,
+		paddingHorizontal: theme.spacing.medium,
 	},
 });
 

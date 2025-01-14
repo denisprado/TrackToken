@@ -41,32 +41,38 @@ const TokenAdditionItem: React.FC<TokenAdditionItemProps> = ({ amount, timestamp
 
 const styles = StyleSheet.create({
 	additionItem: {
-		padding: 10,
+		paddingVertical: theme.spacing.large,
+		paddingLeft: theme.spacing.large,
+		marginHorizontal: theme.spacing.small,
+		marginVertical: theme.spacing.small,
 		borderBottomWidth: 1,
-		borderBottomColor: theme.border,
+		borderRadius: theme.spacing.medium,
+		borderBottomColor: theme.colors.border,
 		flexDirection: 'row',
-		justifyContent: 'space-between'
+		alignItems: 'center',
+		backgroundColor: theme.colors.cardBackground,
 	},
+
 	additionInfo: {
 	},
 	additionAmount: {
-		color: theme.text,
-		fontSize: 14,
-		fontFamily: 'monospace'
+		color: theme.colors.text,
+		fontSize: theme.fontSizes.medium,
+		fontFamily: theme.fontFamilies.monospace
 	},
 	additionTimestamp: {
-		color: theme.secondaryText,
-		fontSize: 12
+		color: theme.colors.secondaryText,
+		fontSize: theme.fontSizes.small
 	},
 	percentageChange: {
-		fontSize: 12,
-		fontFamily: 'monospace',
+		fontSize: theme.fontSizes.small,
+		fontFamily: theme.fontFamilies.monospace,
 	},
 	gain: {
-		color: '#69F0AE'
+		color: theme.colors.accent
 	},
 	loss: {
-		color: theme.error
+		color: theme.colors.error
 	}
 });
 

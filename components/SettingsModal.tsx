@@ -50,7 +50,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 							<Text style={styles.confirmButtonText}>Confirm</Text>
 						</TouchableOpacity>
 						<TouchableOpacity style={styles.modalClose} onPress={onClose}>
-							<Feather name="x" size={20} color={theme.secondaryText} />
+							<Feather name="x" size={20} color={theme.colors.secondaryText} />
 						</TouchableOpacity>
 					</ScrollView>
 				</View>
@@ -68,10 +68,10 @@ const styles = StyleSheet.create({
 		backgroundColor: 'rgba(0, 0, 0, 0.5)',
 	},
 	modalView: {
-		margin: 20,
-		backgroundColor: theme.cardBackground,
-		borderRadius: 10,
-		padding: 20,
+		margin: theme.spacing.xlarge,
+		backgroundColor: theme.colors.cardBackground,
+		borderRadius: theme.spacing.medium,
+		padding: theme.spacing.xlarge,
 		shadowColor: '#000',
 		shadowOffset: {
 			width: 0,
@@ -79,49 +79,49 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.25,
 		shadowRadius: 4,
-		elevation: 5,
+		elevation: theme.spacing.small,
 	},
 	modalClose: {
 		position: 'absolute',
-		top: 10,
-		right: 10,
+		top: theme.spacing.medium,
+		right: theme.spacing.medium,
 	},
 	modalTitle: {
-		fontSize: 20,
+		fontSize: theme.fontSizes.xlarge,
 		fontWeight: 'bold',
-		color: theme.text,
-		marginBottom: 10,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.medium,
 	},
 	label: {
-		fontSize: 16,
-		color: theme.text,
-		marginBottom: 5,
+		fontSize: theme.fontSizes.large,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.small,
 	},
 	selectText: {
-		fontSize: 16,
-		color: theme.text,
-		padding: 10,
+		fontSize: theme.fontSizes.large,
+		color: theme.colors.text,
+		padding: theme.spacing.medium,
 		borderWidth: 1,
-		borderColor: theme.border,
-		borderRadius: 5,
+		borderColor: theme.colors.border,
+		borderRadius: theme.spacing.small,
 		textAlign: 'center',
-		marginBottom: 10,
+		marginBottom: theme.spacing.medium,
 	},
 	picker: {
 		height: 50,
-		backgroundColor: theme.inputBackground,
-		color: theme.text,
+		backgroundColor: theme.colors.inputBackground,
+		color: theme.colors.text,
 	},
 	confirmButton: {
-		backgroundColor: theme.primary,
-		padding: 10,
-		borderRadius: 5,
-		marginTop: 10,
+		backgroundColor: theme.colors.primary,
+		padding: theme.spacing.medium,
+		borderRadius: theme.spacing.small,
+		marginTop: theme.spacing.medium,
 		alignItems: 'center',
 		zIndex: 1,
 	},
 	confirmButtonText: {
-		color: theme.text,
+		color: theme.colors.text,
 		fontWeight: 'bold',
 	},
 });

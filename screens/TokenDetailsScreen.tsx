@@ -161,10 +161,10 @@ const TokenDetailsScreen = () => {
 							<Text style={styles.title}>{token.name} Details</Text>
 						</View>
 						<TouchableOpacity style={styles.iconButton} onPress={() => handleSwapTokensPress(token.id, 0)}>
-							<Feather name="repeat" size={24} color={theme.text} />
+							<Feather name="repeat" size={24} color={theme.colors.text} />
 						</TouchableOpacity>
 						<TouchableOpacity style={styles.redeemButton} onPress={handleOpenRedeemModal}>
-							<Feather name="arrow-down-circle" size={24} color={theme.error} />
+							<Feather name="arrow-down-circle" size={24} color={theme.colors.error} />
 						</TouchableOpacity>
 					</View>
 
@@ -188,18 +188,18 @@ const TokenDetailsScreen = () => {
 						<View style={styles.inputContainer}>
 							<Text style={styles.label}>Amount:</Text>
 							<TextInput
-								style={[styles.input, { color: theme.text }]}
+								style={[styles.input, { color: theme.colors.text }]}
 								keyboardType="numeric"
 								value={redeemAmount}
 								onChangeText={setRedeemAmount}
 								placeholder="Enter amount"
-								placeholderTextColor={theme.secondaryText}
-								selectionColor={theme.secondaryText}
+								placeholderTextColor={theme.colors.secondaryText}
+								selectionColor={theme.colors.secondaryText}
 							/>
 						</View>
-						<Button title="Redeem" onPress={handleRedeemToken} color={theme.primary} />
+						<Button title="Redeem" onPress={handleRedeemToken} color={theme.colors.primary} />
 						<TouchableOpacity style={styles.modalClose} onPress={handleCloseRedeemModal}>
-							<Feather name="x" size={20} color={theme.secondaryText} />
+							<Feather name="x" size={20} color={theme.colors.secondaryText} />
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -211,55 +211,55 @@ const TokenDetailsScreen = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 20,
-		backgroundColor: theme.background,
+		padding: theme.spacing.xlarge,
+		backgroundColor: theme.colors.background,
 	},
 	header: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
-		marginBottom: 20,
+		marginBottom: theme.spacing.xlarge,
 	},
 	headerToken: {
 		display: 'flex',
 		justifyContent: 'flex-start',
 		flexDirection: 'row',
 		alignItems: 'center',
-		gap: 20,
+		gap: theme.spacing.xlarge,
 		flex: 1,
 
 	},
 	title: {
-		fontSize: 24,
+		fontSize: theme.fontSizes.xlarge,
 		fontWeight: 'bold',
-		color: theme.text,
+		color: theme.colors.text,
 
 
 	},
 	additionItem: {
-		padding: 10,
+		padding: theme.spacing.medium,
 		borderBottomWidth: 1,
-		borderBottomColor: theme.border,
+		borderBottomColor: theme.colors.border,
 		flexDirection: 'row',
 		justifyContent: 'space-between'
 	},
 	additionInfo: {
 	},
 	additionAmount: {
-		color: theme.text,
-		fontSize: 16
+		color: theme.colors.text,
+		fontSize: theme.fontSizes.large
 	},
 	additionTimestamp: {
-		color: theme.secondaryText,
+		color: theme.colors.secondaryText,
 		fontSize: 14
 	},
 	noTokenText: {
-		color: theme.secondaryText,
+		color: theme.colors.secondaryText,
 		textAlign: 'center',
-		fontSize: 16
+		fontSize: theme.fontSizes.large
 	},
 	iconButton: {
-		padding: 5,
+		padding: theme.spacing.small,
 	},
 	redeemButton: {
 		padding: 5
@@ -271,10 +271,10 @@ const styles = StyleSheet.create({
 		backgroundColor: 'rgba(0, 0, 0, 0.5)',
 	},
 	modalView: {
-		margin: 20,
-		backgroundColor: theme.cardBackground,
-		borderRadius: 10,
-		padding: 20,
+		margin: theme.spacing.xlarge,
+		backgroundColor: theme.colors.cardBackground,
+		borderRadius: theme.spacing.medium,
+		padding: theme.spacing.xlarge,
 		shadowColor: '#000',
 		shadowOffset: {
 			width: 0,
@@ -282,34 +282,34 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.25,
 		shadowRadius: 4,
-		elevation: 5,
+		elevation: theme.spacing.small,
 	},
 	modalClose: {
 		position: 'absolute',
-		top: 10,
-		right: 10
+		top: theme.spacing.medium,
+		right: theme.spacing.medium
 	},
 	modalTitle: {
-		fontSize: 20,
+		fontSize: theme.fontSizes.xlarge,
 		fontWeight: 'bold',
-		color: theme.text,
-		marginBottom: 10
+		color: theme.colors.text,
+		marginBottom: theme.spacing.medium
 	},
 	inputContainer: {
-		marginBottom: 10,
+		marginBottom: theme.spacing.medium,
 	},
 	label: {
-		fontSize: 16,
-		marginBottom: 5,
-		color: theme.text,
+		fontSize: theme.fontSizes.large,
+		marginBottom: theme.spacing.small,
+		color: theme.colors.text,
 	},
 	input: {
 		height: 40,
-		backgroundColor: theme.inputBackground,
-		borderColor: theme.border,
+		backgroundColor: theme.colors.inputBackground,
+		borderColor: theme.colors.border,
 		borderWidth: 1,
-		padding: 10,
-		borderRadius: 5,
+		padding: theme.spacing.medium,
+		borderRadius: theme.spacing.small,
 	},
 });
 

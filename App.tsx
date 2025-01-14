@@ -21,12 +21,12 @@ const App = () => {
 				<View style={styles.container}>
 					<Stack.Navigator initialRouteName="Wallets" screenOptions={{
 						headerStyle: {
-							backgroundColor: theme.background
+							backgroundColor: theme.colors.background
 						},
 						headerTitleStyle: {
-							color: theme.text,
+							color: theme.colors.text,
 						},
-						headerTintColor: theme.text
+						headerTintColor: theme.colors.text
 					}}>
 						<Stack.Screen name="Wallets" component={WalletsScreen} options={{ headerShown: false }} />
 						<Stack.Screen name="Tokens" component={TokensScreen} />
@@ -44,8 +44,8 @@ const App = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: theme.background,
-		fontFamily: 'monospace',
+		backgroundColor: theme.colors.background,
+		fontFamily: theme.fontFamilies.monospace,
 	},
 });
 

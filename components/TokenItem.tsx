@@ -61,7 +61,7 @@ const TokenItem: React.FC<TokenItemProps> = ({
 			</View>
 
 			<View style={styles.detailsButton}>
-				<Feather name="chevron-right" size={18} color={theme.secondaryText} />
+				<Feather name="chevron-right" size={18} color={theme.colors.secondaryText} />
 			</View>
 
 		</TouchableOpacity>
@@ -71,15 +71,16 @@ const TokenItem: React.FC<TokenItemProps> = ({
 // Estilos
 const styles = StyleSheet.create({
 	itemContainer: {
-		paddingVertical: 8,
-		paddingLeft: 10,
-		marginHorizontal: 15,
-		marginVertical: 8,
+		paddingVertical: theme.spacing.medium,
+		paddingLeft: theme.spacing.medium,
+		marginHorizontal: theme.spacing.large,
+		marginVertical: theme.spacing.small,
 		borderBottomWidth: 1,
-		borderBottomColor: theme.border,
+		borderBottomColor: theme.colors.border,
 		flexDirection: 'row',
 		alignItems: 'center',
-		backgroundColor: theme.cardBackground,
+		backgroundColor: theme.colors.cardBackground,
+		borderRadius: theme.spacing.medium
 	},
 	imageContainer: {
 		width: 32,
@@ -87,11 +88,11 @@ const styles = StyleSheet.create({
 	},
 	leftContainer: {
 		width: '30%',
-		paddingLeft: 5,
+		paddingLeft: theme.spacing.small,
 	},
 	centerContainer: {
 		flex: 1,
-		paddingLeft: 5,
+		paddingLeft: theme.spacing.small,
 		flexDirection: 'column',
 		alignItems: 'flex-end',
 	},
@@ -99,59 +100,57 @@ const styles = StyleSheet.create({
 		alignItems: 'flex-end',
 	},
 	name: {
-		fontSize: 16,
-		color: theme.text,
+		fontSize: theme.fontSizes.large,
+		color: theme.colors.text,
 		textAlign: 'left',
 		fontWeight: 'bold',
 	},
 	amount: {
-		fontSize: 14,
-		color: theme.secondaryText,
-		fontFamily: 'monospace',
+		fontSize: theme.fontSizes.medium,
+		color: theme.colors.secondaryText,
+		fontFamily: theme.fontFamilies.monospace,
 
 	},
 	value: {
-		fontSize: 14,
-		color: theme.text,
-		fontFamily: 'monospace',
+		fontSize: theme.fontSizes.medium,
+		color: theme.colors.text,
+		fontFamily: theme.fontFamilies.monospace,
 	},
 	currencyPercentageChange: {
-		fontSize: 10,
-		marginLeft: 5,
-		fontFamily: 'monospace',
+		fontSize: theme.fontSizes.small,
+		marginLeft: theme.spacing.small,
+		fontFamily: theme.fontFamilies.monospace,
 	},
 	gain: {
-		color: '#69F0AE',
+		color: theme.colors.accent,
 	},
 	loss: {
-		color: theme.error,
+		color: theme.colors.error,
 	},
 	currency: {
 		textTransform: 'uppercase',
-		paddingRight: 5,
-		fontSize: 12,
-		color: theme.secondaryText,
-		fontFamily: 'monospace',
+		paddingRight: theme.spacing.small,
+		fontSize: theme.fontSizes.small,
+		color: theme.colors.secondaryText,
+		fontFamily: theme.fontFamilies.monospace,
 	},
 	detailsButton: {
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
-		paddingHorizontal: 20,
+		paddingHorizontal: theme.spacing.xlarge,
 
 	},
 	percentageBarContainer: {
 		display: 'flex',
 		flexDirection: 'row',
-
 		width: '100%',
-		height: 4,
-		backgroundColor: theme.border,
+		height: 8,
+		backgroundColor: theme.colors.border,
 		borderRadius: 4,
-		marginTop: 5,
+		marginTop: theme.spacing.small,
 	},
 	percentageBar: {
-
 		height: '100%',
 		backgroundColor: '#fff', // Cor da barra, pode ser ajustada
 		borderRadius: 4,

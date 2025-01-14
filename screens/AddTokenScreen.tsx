@@ -182,7 +182,7 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 			keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
 		>
-			<ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: theme.background }}>
+			<ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: theme.colors.background }}>
 				<View style={styles.container}>
 					<Text style={styles.title}>Add New Token</Text>
 
@@ -201,13 +201,13 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 					<View style={styles.inputContainer}>
 						<Text style={styles.label}>Amount of Tokens:</Text>
 						<TextInput
-							style={[styles.input, { color: theme.text }]}
+							style={[styles.input, { color: theme.colors.text }]}
 							keyboardType="numeric"
 							value={tokenAmount}
 							onChangeText={handleTokenAmountChange}
 							placeholder="Enter amount"
-							placeholderTextColor={theme.secondaryText}
-							selectionColor={theme.secondaryText}
+							placeholderTextColor={theme.colors.secondaryText}
+							selectionColor={theme.colors.secondaryText}
 						/>
 					</View>
 
@@ -216,13 +216,13 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 						{currency && <Text style={styles.label}>Current Value in {currency.name}:</Text>}
 						<View style={{ flexDirection: 'row', alignItems: 'center' }}>
 							<TextInput
-								style={[styles.input, { color: theme.text, flex: 1 }]}
+								style={[styles.input, { color: theme.colors.text, flex: 1 }]}
 								keyboardType="numeric"
 								value={currentTokenValue.toString()}
 								onChangeText={(value) => handleCurrentTokenValueChange(parseFloat(value))}
 								placeholder="Enter current value"
-								placeholderTextColor={theme.secondaryText}
-								selectionColor={theme.secondaryText}
+								placeholderTextColor={theme.colors.secondaryText}
+								selectionColor={theme.colors.secondaryText}
 								editable={isEditing}
 							/>
 							<TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
@@ -237,7 +237,7 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 						<Text style={styles.value}>{totalValueReceived}</Text>
 					</View>
 
-					<Button title="Add Token" onPress={handleAddToken} color={theme.primary} />
+					<Button title="Add Token" onPress={handleAddToken} color={theme.colors.primary} />
 
 					<Modal
 						animationType="slide"
@@ -248,15 +248,15 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 						<View style={styles.centeredView}>
 							<View style={styles.modalView}>
 								<View style={styles.searchContainer}>
-									<Feather name="search" size={20} color={theme.secondaryText} style={styles.searchIcon} />
+									<Feather name="search" size={20} color={theme.colors.secondaryText} style={styles.searchIcon} />
 									<TextInput
 										placeholder="Search token"
-										style={[styles.searchInput, { color: theme.text }]}
+										style={[styles.searchInput, { color: theme.colors.text }]}
 										onChangeText={setSearchText}
-										placeholderTextColor={theme.secondaryText}
+										placeholderTextColor={theme.colors.secondaryText}
 									/>
 									<TouchableOpacity onPress={handleCloseModal} style={styles.modalClose}>
-										<Feather name="x" size={20} color={theme.secondaryText} />
+										<Feather name="x" size={20} color={theme.colors.secondaryText} />
 									</TouchableOpacity>
 								</View>
 								<FlatList
@@ -276,46 +276,46 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 20,
-		backgroundColor: theme.background,
+		padding: theme.spacing.xlarge,
+		backgroundColor: theme.colors.background,
 	},
 	title: {
-		fontSize: 12,
+		fontSize: theme.fontSizes.small,
 		fontWeight: 'bold',
-		marginBottom: 20,
+		marginBottom: theme.spacing.xlarge,
 		textAlign: 'left',
-		color: theme.text,
+		color: theme.colors.text,
 	},
 	inputContainer: {
-		marginBottom: 10,
+		marginBottom: theme.spacing.medium,
 	},
 	label: {
-		fontSize: 16,
-		marginBottom: 5,
-		color: theme.text,
+		fontSize: theme.fontSizes.large,
+		marginBottom: theme.spacing.small,
+		color: theme.colors.text,
 	},
 	input: {
 		height: 40,
-		backgroundColor: theme.inputBackground,
-		borderColor: theme.border,
+		backgroundColor: theme.colors.inputBackground,
+		borderColor: theme.colors.border,
 		borderWidth: 1,
-		padding: 10,
-		borderRadius: 5,
+		padding: theme.spacing.medium,
+		borderRadius: theme.spacing.small,
 	},
 	selectButton: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
 		height: 40,
-		backgroundColor: theme.inputBackground,
-		borderColor: theme.border,
+		backgroundColor: theme.colors.inputBackground,
+		borderColor: theme.colors.border,
 		borderWidth: 1,
-		padding: 10,
-		borderRadius: 5,
+		padding: theme.spacing.medium,
+		borderRadius: theme.spacing.small,
 	},
 	selectText: {
-		fontSize: 16,
-		color: theme.text,
+		fontSize: theme.fontSizes.large,
+		color: theme.colors.text,
 	},
 	centeredView: {
 		flex: 1,
@@ -324,10 +324,10 @@ const styles = StyleSheet.create({
 		backgroundColor: 'rgba(0, 0, 0, 0.5)',
 	},
 	modalView: {
-		margin: 20,
-		backgroundColor: theme.cardBackground,
-		borderRadius: 10,
-		padding: 20,
+		margin: theme.spacing.xlarge,
+		backgroundColor: theme.colors.cardBackground,
+		borderRadius: theme.spacing.medium,
+		padding: theme.spacing.xlarge,
 		shadowColor: '#000',
 		shadowOffset: {
 			width: 0,
@@ -335,43 +335,43 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.25,
 		shadowRadius: 4,
-		elevation: 5,
+		elevation: theme.spacing.small,
 	},
 	searchContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		borderBottomWidth: 1,
-		borderBottomColor: theme.border,
-		marginBottom: 10,
+		borderBottomColor: theme.colors.border,
+		marginBottom: theme.spacing.medium,
 	},
 	searchIcon: {
-		marginRight: 10
+		marginRight: theme.spacing.medium
 	},
 	searchInput: {
 		flex: 1,
 		height: 40,
-		paddingVertical: 5,
+		paddingVertical: theme.spacing.small,
 	},
 	modalClose: {
-		paddingLeft: 10
+		paddingLeft: theme.spacing.medium
 	},
 	tokenItem: {
-		padding: 10,
+		padding: theme.spacing.medium,
 		borderBottomWidth: 1,
-		borderBottomColor: theme.border,
+		borderBottomColor: theme.colors.border,
 		display: 'flex',
 		flexDirection: 'row',
-		gap: 20,
+		gap: theme.spacing.xlarge,
 		justifyContent: 'flex-start'
 	},
 	tokenItemText: {
-		fontSize: 16,
-		color: theme.text,
+		fontSize: theme.fontSizes.large,
+		color: theme.colors.text,
 		textAlign: 'left'
 	},
 	value: {
-		fontSize: 16,
-		color: theme.text,
+		fontSize: theme.fontSizes.large,
+		color: theme.colors.text,
 		fontWeight: 'bold',
 	},
 });
