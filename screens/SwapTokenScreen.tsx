@@ -16,10 +16,14 @@ import {
 import { RootStackParamList } from '../types/navigation';
 import { Coin, Currency } from '../types/types';
 import { fetchCoins, fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { CURRENCY, loadCurrency, saveToken } from '../utils/storage';
-import { theme } from '../utils/theme';
+import { loadCurrency, saveToken } from '../utils/storage';
+
+import { useTheme } from '../context/ThemeContext';
+import useThemedStyles from '../hooks/useThemedStyles';
 
 const SwapTokenScreen = () => {
+	const { theme } = useTheme(); // Usando o contexto do tema
+	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
 
 	const navigation = useNavigation<import('@react-navigation/native').NavigationProp<RootStackParamList>>();
 	const route = useRoute();
@@ -289,109 +293,5 @@ const SwapTokenScreen = () => {
 	);
 };
 
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: theme.spacing.xlarge,
-		backgroundColor: theme.colors.background,
-	},
-	title: {
-		fontSize: theme.fontSizes.xlarge,
-		fontWeight: 'bold',
-		marginBottom: theme.spacing.xlarge,
-		textAlign: 'center',
-		color: theme.colors.text,
-	},
-	inputContainer: {
-		marginBottom: theme.spacing.medium,
-	},
-	label: {
-		fontSize: theme.fontSizes.large,
-		marginBottom: theme.spacing.small,
-		color: theme.colors.text,
-	},
-	calculatedAmount: {
-		fontSize: theme.fontSizes.large,
-	},
-	input: {
-		height: 40,
-		backgroundColor: theme.colors.inputBackground,
-		borderColor: theme.colors.border,
-		borderWidth: 1,
-		padding: theme.spacing.medium,
-		borderRadius: theme.spacing.small,
-	},
-	selectButton: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		height: 40,
-		backgroundColor: theme.colors.inputBackground,
-		borderColor: theme.colors.border,
-		borderWidth: 1,
-		padding: theme.spacing.medium,
-		borderRadius: theme.spacing.small,
-	},
-	selectText: {
-		fontSize: theme.fontSizes.large,
-	},
-	centeredView: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent
-	},
-	modalView: {
-		margin: theme.spacing.xlarge,
-		backgroundColor: theme.colors.cardBackground,
-		borderRadius: theme.spacing.medium,
-		padding: theme.spacing.xlarge,
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
-		shadowOpacity: 0.25,
-		shadowRadius: 4,
-		elevation: theme.spacing.small,
-	},
-	searchContainer: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		borderBottomWidth: 1,
-		borderBottomColor: '#eee',
-		marginBottom: theme.spacing.medium,
-	},
-	searchIcon: {
-		marginRight: theme.spacing.medium
-	},
-	searchInput: {
-		flex: 1,
-		height: 40,
-		paddingVertical: theme.spacing.small,
-	},
-	modalClose: {
-		paddingLeft: theme.spacing.medium
-	},
-	tokenItem: {
-		padding: theme.spacing.medium,
-		borderBottomWidth: 1,
-		borderBottomColor: '#eee',
-	},
-	tokenItemText: {
-		fontSize: theme.fontSizes.large,
-	},
-	pickerContainer: {
-		marginBottom: theme.spacing.medium,
-		borderWidth: 1,
-		borderColor: theme.colors.border,
-		borderRadius: theme.spacing.small,
-	},
-	picker: {
-		height: 50,
-		backgroundColor: theme.colors.inputBackground
-	}
-});
 
 export default SwapTokenScreen;

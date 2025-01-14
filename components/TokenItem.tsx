@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import React from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
+import useThemedStyles from '../hooks/useThemedStyles';
+import { Coin, Currency } from '../types/types';
 import { theme } from '../utils/theme';
-import { Coin, CoinMarketData, Currency } from '../types/types';
-import { loadCurrency } from '../utils/storage';
 
 // Definição de tipos para as propriedades do componente
 interface TokenItemProps {
@@ -33,6 +34,7 @@ const TokenItem: React.FC<TokenItemProps> = ({
 			currency: currency?.symbol || 'usd', // Usar 'usd' como padrão se currency não estiver definido
 		}).format(currencyTotalAmount)
 		: 'Loading...';
+	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
 
 	return (
 		<TouchableOpacity style={styles.itemContainer} onPress={onPress}>
@@ -68,93 +70,5 @@ const TokenItem: React.FC<TokenItemProps> = ({
 	);
 };
 
-// Estilos
-const styles = StyleSheet.create({
-	itemContainer: {
-		paddingVertical: theme.spacing.medium,
-		paddingLeft: theme.spacing.medium,
-		marginHorizontal: theme.spacing.large,
-		marginVertical: theme.spacing.small,
-		borderBottomWidth: 1,
-		borderBottomColor: theme.colors.border,
-		flexDirection: 'row',
-		alignItems: 'center',
-		backgroundColor: theme.colors.cardBackground,
-		borderRadius: theme.spacing.medium
-	},
-	imageContainer: {
-		width: 32,
-		height: 32
-	},
-	leftContainer: {
-		width: '30%',
-		paddingLeft: theme.spacing.small,
-	},
-	centerContainer: {
-		flex: 1,
-		paddingLeft: theme.spacing.small,
-		flexDirection: 'column',
-		alignItems: 'flex-end',
-	},
-	currencyValueContainer: {
-		alignItems: 'flex-end',
-	},
-	name: {
-		fontSize: theme.fontSizes.large,
-		color: theme.colors.text,
-		textAlign: 'left',
-		fontWeight: 'bold',
-	},
-	amount: {
-		fontSize: theme.fontSizes.medium,
-		color: theme.colors.secondaryText,
-		fontFamily: theme.fontFamilies.monospace,
-
-	},
-	value: {
-		fontSize: theme.fontSizes.medium,
-		color: theme.colors.text,
-		fontFamily: theme.fontFamilies.monospace,
-	},
-	currencyPercentageChange: {
-		fontSize: theme.fontSizes.small,
-		marginLeft: theme.spacing.small,
-		fontFamily: theme.fontFamilies.monospace,
-	},
-	gain: {
-		color: theme.colors.accent,
-	},
-	loss: {
-		color: theme.colors.error,
-	},
-	currency: {
-		textTransform: 'uppercase',
-		paddingRight: theme.spacing.small,
-		fontSize: theme.fontSizes.small,
-		color: theme.colors.secondaryText,
-		fontFamily: theme.fontFamilies.monospace,
-	},
-	detailsButton: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-		paddingHorizontal: theme.spacing.xlarge,
-
-	},
-	percentageBarContainer: {
-		display: 'flex',
-		flexDirection: 'row',
-		width: '100%',
-		height: 8,
-		backgroundColor: theme.colors.border,
-		borderRadius: 4,
-		marginTop: theme.spacing.small,
-	},
-	percentageBar: {
-		height: '100%',
-		backgroundColor: '#fff', // Cor da barra, pode ser ajustada
-		borderRadius: 4,
-	},
-});
 
 export default TokenItem;

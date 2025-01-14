@@ -1,18 +1,19 @@
 import { Feather } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import SettingsModal from '../components/SettingsModal';
 import TokenItem from '../components/TokenItem';
 import { Currency, TokenAddition, TokenData } from '../types/types';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
 import { loadCurrency, loadTokens, removeWallet, saveCurrency } from '../utils/storage';
-import { theme } from '../utils/theme';
-import SettingsModal from '../components/SettingsModal';
 // Definições de tipos
+import { useTheme } from '../context/ThemeContext';
+import useThemedStyles from '../hooks/useThemedStyles';
 
 const TokensScreen = ({ route }: { route: any }) => {
-
+	const { theme } = useTheme(); // Usando o contexto do tema
+	const styles = useThemedStyles();
 	// Estado
 	const navigation = useNavigation();
 	const routes = route.params; // Obter o ID da carteira
@@ -175,10 +176,6 @@ const TokensScreen = ({ route }: { route: any }) => {
 		navigation.navigate('TokenDetails', { tokenId, currency: currency?.symbol! });
 	};
 
-	const handleOpenSettingsModal = () => {
-		setSettingsModalVisible(true);
-	};
-
 	const handleCloseSettingsModal = () => {
 		setSettingsModalVisible(false);
 	};
@@ -229,10 +226,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 				<TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteWallet(walletId)}>
 					<Feather name="trash" size={24} color={theme.colors.text} />
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.iconButton} onPress={handleOpenSettingsModal}>
-					<Feather name="settings" size={24} color={theme.colors.text} />
-					<Text style={styles.label}>({currency?.symbol.toUpperCase()})</Text>
-				</TouchableOpacity>
+
 			</View>
 
 			{loading ? (
@@ -260,130 +254,9 @@ const TokensScreen = ({ route }: { route: any }) => {
 				/>
 			)}
 
-			<SettingsModal
-				visible={settingsModalVisible}
-				onClose={handleCloseSettingsModal}
-				currencies={currencies}
-				selectedCurrency={tempPrimaryCurrency}
-				onCurrencyChange={setTempPrimaryCurrency}
-				onConfirm={handleConfirmCurrencySelection}
-			/>
+
 		</View>
 	);
 };
-
-// Estilos
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: theme.spacing.xlarge,
-		backgroundColor: theme.colors.background,
-	},
-	header: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		marginBottom: theme.spacing.xlarge,
-	},
-	title: {
-		fontSize: theme.fontSizes.xlarge,
-		fontWeight: 'bold',
-		color: theme.colors.text,
-		flex: 1
-	},
-	iconButton: {
-		display: 'flex',
-		flexDirection: 'row',
-		gap: theme.spacing.medium,
-		padding: theme.spacing.small,
-	},
-	loadingContainer: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	centeredView: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: theme.colors.background,
-	},
-	modalView: {
-		margin: theme.spacing.xlarge,
-		backgroundColor: theme.colors.cardBackground,
-		borderRadius: theme.spacing.medium,
-		padding: theme.spacing.xlarge,
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
-		shadowOpacity: 0.25,
-		shadowRadius: 4,
-		elevation: theme.spacing.small,
-	},
-	modalClose: {
-		position: 'absolute',
-		top: theme.spacing.medium,
-		right: theme.spacing.medium,
-	},
-	modalTitle: {
-		fontSize: theme.fontSizes.xlarge,
-		fontWeight: 'bold',
-		color: theme.colors.text,
-		marginBottom: theme.spacing.medium,
-	},
-	inputContainer: {
-		marginBottom: theme.spacing.medium,
-	},
-	label: {
-		fontSize: theme.fontSizes.large,
-		color: theme.colors.text,
-		marginBottom: theme.spacing.small,
-	},
-	input: {
-		height: 40,
-		backgroundColor: theme.colors.inputBackground,
-		borderColor: theme.colors.border,
-		borderWidth: 1,
-		padding: theme.spacing.medium,
-		borderRadius: theme.spacing.small,
-	},
-	listStyle: {
-		marginHorizontal: -theme.spacing.xlarge,
-	},
-	buttonContainer: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		marginTop: theme.spacing.medium
-	},
-	picker: {
-		height: 50,
-		backgroundColor: theme.colors.inputBackground,
-		color: theme.colors.text,
-	},
-	confirmButton: {
-		backgroundColor: theme.colors.primary,
-		padding: theme.spacing.medium,
-		borderRadius: theme.spacing.small,
-		marginTop: theme.spacing.medium,
-		alignItems: 'center',
-		zIndex: 1,
-	},
-	confirmButtonText: {
-		color: theme.colors.text,
-		fontWeight: 'bold',
-	},
-	selectText: {
-		fontSize: theme.fontSizes.large,
-		color: theme.colors.text,
-		padding: theme.spacing.medium,
-		borderWidth: 1,
-		borderColor: theme.colors.border,
-		borderRadius: theme.spacing.small,
-		textAlign: 'center',
-		marginBottom: theme.spacing.medium,
-	},
-});
 
 export default TokensScreen;

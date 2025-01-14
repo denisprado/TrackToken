@@ -19,9 +19,12 @@ import {
 import { Coin, Currency } from '../types/types';
 import { fetchCoins, fetchCurrencies, fetchTokenPrice } from '../utils/api';
 import { loadCurrency, saveToken } from '../utils/storage';
-import { theme } from '../utils/theme';
+import { useTheme } from '../context/ThemeContext';
+import useThemedStyles from '../hooks/useThemedStyles';
 
 const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) => {
+	const { theme } = useTheme(); // Usando o contexto do tema
+	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
 
 	const navigation = useNavigation();
 	const [tokens, setTokens] = useState<Coin[]>([]);
@@ -234,7 +237,7 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 					{/* Valor Total Recebido */}
 					<View style={styles.inputContainer}>
 						{currency && <Text style={styles.label}>Total Value Received in {currency!.name}:</Text>}
-						<Text style={styles.value}>{totalValueReceived}</Text>
+						<Text style={styles.label}>{totalValueReceived}</Text>
 					</View>
 
 					<Button title="Add Token" onPress={handleAddToken} color={theme.colors.primary} />
@@ -272,108 +275,5 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 		</KeyboardAvoidingView>
 	);
 };
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: theme.spacing.xlarge,
-		backgroundColor: theme.colors.background,
-	},
-	title: {
-		fontSize: theme.fontSizes.small,
-		fontWeight: 'bold',
-		marginBottom: theme.spacing.xlarge,
-		textAlign: 'left',
-		color: theme.colors.text,
-	},
-	inputContainer: {
-		marginBottom: theme.spacing.medium,
-	},
-	label: {
-		fontSize: theme.fontSizes.large,
-		marginBottom: theme.spacing.small,
-		color: theme.colors.text,
-	},
-	input: {
-		height: 40,
-		backgroundColor: theme.colors.inputBackground,
-		borderColor: theme.colors.border,
-		borderWidth: 1,
-		padding: theme.spacing.medium,
-		borderRadius: theme.spacing.small,
-	},
-	selectButton: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		height: 40,
-		backgroundColor: theme.colors.inputBackground,
-		borderColor: theme.colors.border,
-		borderWidth: 1,
-		padding: theme.spacing.medium,
-		borderRadius: theme.spacing.small,
-	},
-	selectText: {
-		fontSize: theme.fontSizes.large,
-		color: theme.colors.text,
-	},
-	centeredView: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
-	},
-	modalView: {
-		margin: theme.spacing.xlarge,
-		backgroundColor: theme.colors.cardBackground,
-		borderRadius: theme.spacing.medium,
-		padding: theme.spacing.xlarge,
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
-		shadowOpacity: 0.25,
-		shadowRadius: 4,
-		elevation: theme.spacing.small,
-	},
-	searchContainer: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		borderBottomWidth: 1,
-		borderBottomColor: theme.colors.border,
-		marginBottom: theme.spacing.medium,
-	},
-	searchIcon: {
-		marginRight: theme.spacing.medium
-	},
-	searchInput: {
-		flex: 1,
-		height: 40,
-		paddingVertical: theme.spacing.small,
-	},
-	modalClose: {
-		paddingLeft: theme.spacing.medium
-	},
-	tokenItem: {
-		padding: theme.spacing.medium,
-		borderBottomWidth: 1,
-		borderBottomColor: theme.colors.border,
-		display: 'flex',
-		flexDirection: 'row',
-		gap: theme.spacing.xlarge,
-		justifyContent: 'flex-start'
-	},
-	tokenItemText: {
-		fontSize: theme.fontSizes.large,
-		color: theme.colors.text,
-		textAlign: 'left'
-	},
-	value: {
-		fontSize: theme.fontSizes.large,
-		color: theme.colors.text,
-		fontWeight: 'bold',
-	},
-});
 
 export default AddTokenScreen;

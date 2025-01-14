@@ -3,7 +3,8 @@ import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { Picker } from '@react-native-picker/picker';
 import { Feather } from '@expo/vector-icons';
 import { Currency } from '../types/types';
-import { theme } from '../utils/theme';
+import { useTheme } from '../context/ThemeContext';
+import useThemedStyles from '../hooks/useThemedStyles';
 
 interface SettingsModalProps {
 	visible: boolean;
@@ -22,6 +23,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	onCurrencyChange,
 	onConfirm,
 }) => {
+	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
+
 	return (
 		<Modal
 			animationType="slide"
@@ -50,7 +53,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 							<Text style={styles.confirmButtonText}>Confirm</Text>
 						</TouchableOpacity>
 						<TouchableOpacity style={styles.modalClose} onPress={onClose}>
-							<Feather name="x" size={20} color={theme.colors.secondaryText} />
+							<Feather name="x" size={20} color={styles.iconButtonText.color} />
 						</TouchableOpacity>
 					</ScrollView>
 				</View>
@@ -59,71 +62,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	);
 };
 
-// Estilos
-const styles = StyleSheet.create({
-	centeredView: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
-	},
-	modalView: {
-		margin: theme.spacing.xlarge,
-		backgroundColor: theme.colors.cardBackground,
-		borderRadius: theme.spacing.medium,
-		padding: theme.spacing.xlarge,
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
-		shadowOpacity: 0.25,
-		shadowRadius: 4,
-		elevation: theme.spacing.small,
-	},
-	modalClose: {
-		position: 'absolute',
-		top: theme.spacing.medium,
-		right: theme.spacing.medium,
-	},
-	modalTitle: {
-		fontSize: theme.fontSizes.xlarge,
-		fontWeight: 'bold',
-		color: theme.colors.text,
-		marginBottom: theme.spacing.medium,
-	},
-	label: {
-		fontSize: theme.fontSizes.large,
-		color: theme.colors.text,
-		marginBottom: theme.spacing.small,
-	},
-	selectText: {
-		fontSize: theme.fontSizes.large,
-		color: theme.colors.text,
-		padding: theme.spacing.medium,
-		borderWidth: 1,
-		borderColor: theme.colors.border,
-		borderRadius: theme.spacing.small,
-		textAlign: 'center',
-		marginBottom: theme.spacing.medium,
-	},
-	picker: {
-		height: 50,
-		backgroundColor: theme.colors.inputBackground,
-		color: theme.colors.text,
-	},
-	confirmButton: {
-		backgroundColor: theme.colors.primary,
-		padding: theme.spacing.medium,
-		borderRadius: theme.spacing.small,
-		marginTop: theme.spacing.medium,
-		alignItems: 'center',
-		zIndex: 1,
-	},
-	confirmButtonText: {
-		color: theme.colors.text,
-		fontWeight: 'bold',
-	},
-});
+
 
 export default SettingsModal;

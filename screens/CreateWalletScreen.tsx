@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import { fetchWallets, saveWallet } from '../utils/storage'; // Função para salvar carteiras
-import theme from '../utils/theme';
+
+import { useTheme } from '../context/ThemeContext';
+import useThemedStyles from '../hooks/useThemedStyles';
 
 const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 	const [walletName, setWalletName] = useState('');
+	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
 
 	const handleCreateWallet = async () => {
 		if (!walletName.trim()) {
@@ -42,23 +45,7 @@ const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 };
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: theme.spacing.xlarge,
-		backgroundColor: '#fff',
-	},
-	title: {
-		fontSize: theme.fontSizes.xlarge,
-		fontWeight: 'bold',
-		marginBottom: theme.spacing.xlarge,
-	},
-	input: {
-		height: 40,
-		borderColor: '#ccc',
-		borderWidth: 1,
-		marginBottom: theme.spacing.xlarge,
-		paddingHorizontal: theme.spacing.medium,
-	},
+
 });
 
 export default CreateWalletScreen; 

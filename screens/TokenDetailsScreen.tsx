@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, Modal, TextInput, Button, Image } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { loadTokens, saveToken, saveCurrency, loadCurrency } from '../utils/storage';
-import { theme } from '../utils/theme';
-import { RootStackParamList } from '../types/navigation';
-import TokenAdditionItem from '../components/TokenAdditionItem';
 import { Feather } from '@expo/vector-icons';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { Alert, Button, FlatList, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import TokenAdditionItem from '../components/TokenAdditionItem';
+import { useTheme } from '../context/ThemeContext';
+import useThemedStyles from '../hooks/useThemedStyles';
+import { RootStackParamList } from '../types/navigation';
+import { TokenAddition, TokenData } from '../types/types';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { Token, TokenAddition, TokenData } from '../types/types';
-
-
+import { loadCurrency, loadTokens, saveToken } from '../utils/storage';
 
 const TokenDetailsScreen = () => {
 	const navigation = useNavigation<import('@react-navigation/native').NavigationProp<RootStackParamList>>();
+
+	const { theme } = useTheme(); // Usando o contexto do tema
+	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
+
+
 	const route = useRoute();
 	const { tokenId, currency } = route.params as { tokenId: string, currency: string };
 	const [token, setToken] = useState<TokenData | null>(null);
@@ -151,166 +155,59 @@ const TokenDetailsScreen = () => {
 		<TokenAdditionItem amount={item.amount} timestamp={item.timestamp} percentageChange={item.percentageChange} currentValue={item.currentValue} currency={currency} />
 	);
 
-	return (
-		<View style={styles.container}>
-			{token ? (
-				<>
-					<View style={styles.header}>
-						<View style={styles.headerToken}>
-							<Image source={{ uri: token.tokenCoin?.image }} width={32} height={32}></Image>
-							<Text style={styles.title}>{token.name} Details</Text>
-						</View>
-						<TouchableOpacity style={styles.iconButton} onPress={() => handleSwapTokensPress(token.id, 0)}>
-							<Feather name="repeat" size={24} color={theme.colors.text} />
-						</TouchableOpacity>
-						<TouchableOpacity style={styles.redeemButton} onPress={handleOpenRedeemModal}>
-							<Feather name="arrow-down-circle" size={24} color={theme.colors.error} />
-						</TouchableOpacity>
+	return <View style={styles.container}>
+		{token ? (
+			<View>
+				<View style={styles.header}>
+					<View style={styles.headerToken}>
+						<Image source={{ uri: token.tokenCoin?.image }} width={32} height={32}></Image>
+						<Text style={styles.title}>{token.name} Details</Text>
 					</View>
-
-					<FlatList
-						data={token.additions}
-						renderItem={renderAdditionItem}
-						keyExtractor={(item, index) => String(index)}
-					/>
-				</>
-			) : <Text style={styles.noTokenText}>Token not found</Text>}
-
-			<Modal
-				animationType="slide"
-				transparent={true}
-				visible={modalVisible}
-				onRequestClose={handleCloseRedeemModal}
-			>
-				<View style={styles.centeredView}>
-					<View style={styles.modalView}>
-						<Text style={styles.modalTitle}>Redeem Token</Text>
-						<View style={styles.inputContainer}>
-							<Text style={styles.label}>Amount:</Text>
-							<TextInput
-								style={[styles.input, { color: theme.colors.text }]}
-								keyboardType="numeric"
-								value={redeemAmount}
-								onChangeText={setRedeemAmount}
-								placeholder="Enter amount"
-								placeholderTextColor={theme.colors.secondaryText}
-								selectionColor={theme.colors.secondaryText}
-							/>
-						</View>
-						<Button title="Redeem" onPress={handleRedeemToken} color={theme.colors.primary} />
-						<TouchableOpacity style={styles.modalClose} onPress={handleCloseRedeemModal}>
-							<Feather name="x" size={20} color={theme.colors.secondaryText} />
-						</TouchableOpacity>
-					</View>
+					<TouchableOpacity style={styles.iconButton} onPress={() => handleSwapTokensPress(token.id, 0)}>
+						<Feather name="repeat" size={24} color={theme.colors.text} />
+					</TouchableOpacity>
+					<TouchableOpacity style={styles.redeemButton} onPress={handleOpenRedeemModal}>
+						<Feather name="arrow-down-circle" size={24} color={theme.colors.error} />
+					</TouchableOpacity>
 				</View>
-			</Modal>
-		</View>
-	);
+
+				<FlatList
+					data={token.additions}
+					renderItem={renderAdditionItem}
+					keyExtractor={(item, index) => String(index)}
+				/>
+			</View>
+		) : <Text style={styles.noTokenText}>Token not found</Text>}
+
+		<Modal
+			animationType="slide"
+			transparent={true}
+			visible={modalVisible}
+			onRequestClose={handleCloseRedeemModal}
+		>
+			<View style={styles.centeredView}>
+				<View style={styles.modalView}>
+					<Text style={styles.modalTitle}>Redeem Token</Text>
+					<View style={styles.inputContainer}>
+						<Text style={styles.label}>Amount:</Text>
+						<TextInput
+							style={[styles.input, { color: theme.colors.text }]}
+							keyboardType="numeric"
+							value={redeemAmount}
+							onChangeText={setRedeemAmount}
+							placeholder="Enter amount"
+							placeholderTextColor={theme.colors.secondaryText}
+							selectionColor={theme.colors.secondaryText}
+						/>
+					</View>
+					<Button title="Redeem" onPress={handleRedeemToken} color={theme.colors.primary} />
+					<TouchableOpacity style={styles.modalClose} onPress={handleCloseRedeemModal}>
+						<Feather name="x" size={20} color={theme.colors.secondaryText} />
+					</TouchableOpacity>
+				</View>
+			</View>
+		</Modal>
+	</View>
 };
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: theme.spacing.xlarge,
-		backgroundColor: theme.colors.background,
-	},
-	header: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		marginBottom: theme.spacing.xlarge,
-	},
-	headerToken: {
-		display: 'flex',
-		justifyContent: 'flex-start',
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: theme.spacing.xlarge,
-		flex: 1,
-
-	},
-	title: {
-		fontSize: theme.fontSizes.xlarge,
-		fontWeight: 'bold',
-		color: theme.colors.text,
-
-
-	},
-	additionItem: {
-		padding: theme.spacing.medium,
-		borderBottomWidth: 1,
-		borderBottomColor: theme.colors.border,
-		flexDirection: 'row',
-		justifyContent: 'space-between'
-	},
-	additionInfo: {
-	},
-	additionAmount: {
-		color: theme.colors.text,
-		fontSize: theme.fontSizes.large
-	},
-	additionTimestamp: {
-		color: theme.colors.secondaryText,
-		fontSize: 14
-	},
-	noTokenText: {
-		color: theme.colors.secondaryText,
-		textAlign: 'center',
-		fontSize: theme.fontSizes.large
-	},
-	iconButton: {
-		padding: theme.spacing.small,
-	},
-	redeemButton: {
-		padding: 5
-	},
-	centeredView: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
-	},
-	modalView: {
-		margin: theme.spacing.xlarge,
-		backgroundColor: theme.colors.cardBackground,
-		borderRadius: theme.spacing.medium,
-		padding: theme.spacing.xlarge,
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
-		shadowOpacity: 0.25,
-		shadowRadius: 4,
-		elevation: theme.spacing.small,
-	},
-	modalClose: {
-		position: 'absolute',
-		top: theme.spacing.medium,
-		right: theme.spacing.medium
-	},
-	modalTitle: {
-		fontSize: theme.fontSizes.xlarge,
-		fontWeight: 'bold',
-		color: theme.colors.text,
-		marginBottom: theme.spacing.medium
-	},
-	inputContainer: {
-		marginBottom: theme.spacing.medium,
-	},
-	label: {
-		fontSize: theme.fontSizes.large,
-		marginBottom: theme.spacing.small,
-		color: theme.colors.text,
-	},
-	input: {
-		height: 40,
-		backgroundColor: theme.colors.inputBackground,
-		borderColor: theme.colors.border,
-		borderWidth: 1,
-		padding: theme.spacing.medium,
-		borderRadius: theme.spacing.small,
-	},
-});
 
 export default TokenDetailsScreen;

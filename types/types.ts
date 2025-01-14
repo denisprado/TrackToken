@@ -72,6 +72,14 @@ export interface Wallet {
   tokens: Token[]; // Lista de tokens que pertencem a esta carteira
 }
 
+export interface WalletData {
+  [key: string]: {
+    amount: number;
+    percentageChange: string;
+    tokenImages: string[];
+  };
+}
+
 export interface Currency {
   id: string;
   symbol: string;
