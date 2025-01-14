@@ -63,7 +63,9 @@ export const saveToken = async (
       });
 
     // Salva os tokens atualizados no armazenamento
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTokens));
+    console.log(updatedTokens);
+    updatedTokens &&
+      (await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTokens)));
   } catch (error) {
     console.error("Erro ao salvar token", error); // Loga o erro em caso de falha
     throw error; // Lança o erro para tratamento posterior

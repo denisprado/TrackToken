@@ -98,9 +98,13 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	};
 
 	const walletAmount = async (walletId: string) => {
-		const tokens = await loadTokensByWalletId(walletId)
-		const ammout = tokens?.reduce(async (sum, token) => sum + (token.totalAmount * await fetchTokenPrice(token.tokenCoin?.id, { id: currency!, name: currency!, symbol: currency! }) || 0), 0);
-		return ammout
+		const tokens = await loadTokensByWalletId(walletId);
+		let amount = 0;
+		for (const token of tokens || []) {
+			const price = await fetchTokenPrice(token.tokenCoin?.id!, currency);
+			amount += token.totalAmount * (price || 0);
+		}
+		return amount;
 	}
 
 	const renderWalletItem = async ({ item }: { item: Wallet }) => (
