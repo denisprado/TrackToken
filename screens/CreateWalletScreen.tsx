@@ -29,11 +29,13 @@ const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 		}
 	};
 
+
+
 	return (
 		<View style={styles.container}>
 			<View>
 
-				<Text style={styles.title}>Criar Nova Carteira</Text>
+				<Text style={styles.title}>Add Wallet</Text>
 				<TextInput
 					style={styles.input}
 					placeholder="Nome da Carteira"
@@ -41,7 +43,7 @@ const CreateWalletScreen = ({ navigation }: { navigation: any }) => {
 					onChangeText={setWalletName}
 				/>
 			</View>
-			<Button title="Criar Carteira" onPress={handleCreateWallet} />
+			<Button title="Criar Carteira" onPress={handleCreateWallet} color={styles.createButton.color} />
 		</View>
 	);
 };

@@ -10,18 +10,17 @@ import {
 	Modal,
 	Platform,
 	ScrollView,
-	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { Coin, Currency } from '../types/types';
-import { fetchCoins, fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { saveToken } from '../utils/storage';
+import { CurrencyContext } from '../context/CurrencyContext';
 import { useTheme } from '../context/ThemeContext';
 import useThemedStyles from '../hooks/useThemedStyles';
-import { CurrencyContext } from '../context/CurrencyContext';
+import { Coin } from '../types/types';
+import { fetchCoins, fetchTokenPrice } from '../utils/api';
+import { saveToken } from '../utils/storage';
 
 const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) => {
 	const { theme } = useTheme(); // Usando o contexto do tema
@@ -202,7 +201,7 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 							value={tokenAmount}
 							onChangeText={handleTokenAmountChange}
 							placeholder="Enter amount"
-							placeholderTextColor={theme.colors.inputText}
+							placeholderTextColor={styles.inputText.color}
 							selectionColor={theme.colors.inputText}
 						/>
 					</View>
@@ -217,8 +216,8 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 								value={currentTokenValue.toString()}
 								onChangeText={(value) => handleCurrentTokenValueChange(parseFloat(value))}
 								placeholder="Enter current value"
-								placeholderTextColor={theme.colors.secondaryText}
-								selectionColor={theme.colors.secondaryText}
+								placeholderTextColor={styles.inputText.color}
+								selectionColor={styles.inputText.color}
 								editable={isEditing}
 							/>
 							<TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
@@ -233,7 +232,7 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 						<Text style={styles.label}>{totalValueReceived}</Text>
 					</View>
 
-					<Button title="Add Token" onPress={handleAddToken} color={theme.colors.primary} />
+					<Button title="Add Token" onPress={handleAddToken} color={styles.createButton.color} />
 
 					<Modal
 						animationType="slide"

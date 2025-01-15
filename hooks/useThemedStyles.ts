@@ -56,11 +56,12 @@ const useThemedStyles = () => {
       flexDirection: "row",
       alignItems: "center",
       marginBottom: theme.spacing.xlarge,
+      color: theme.colors.primary,
     },
     createButtonText: {
       fontSize: theme.fontSizes.large,
       marginLeft: theme.spacing.medium,
-      color: theme.colors.text,
+      color: theme.colors.primary,
     },
 
     /** TokensScreen */
