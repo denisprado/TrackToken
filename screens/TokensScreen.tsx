@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import SettingsModal from '../components/SettingsModal';
 import TokenItem from '../components/TokenItem';
@@ -10,6 +10,7 @@ import { CURRENCY, loadCurrency, loadTokens, removeWallet, saveCurrency } from '
 // Definições de tipos
 import { useTheme } from '../context/ThemeContext';
 import useThemedStyles from '../hooks/useThemedStyles';
+import { CurrencyContext } from '../context/CurrencyContext';
 
 const TokensScreen = ({ route }: { route: any }) => {
 	const { theme } = useTheme(); // Usando o contexto do tema
@@ -19,20 +20,19 @@ const TokensScreen = ({ route }: { route: any }) => {
 	const routes = route.params; // Obter o ID da carteira
 	const walletId = routes && routes.walletId
 	const walletName = routes && routes.walletName; // Obtendo o nome da carteira a partir dos parâmetros
-	//const initialCurrency = routes && routes.initialCurrency;
+	const currencyContextValues = useContext(CurrencyContext);
+	const currency = currencyContextValues?.currency?.symbol;
 
 	const [tokens, setTokens] = useState<TokenData[]>([]);
 	const [loading, setLoading] = useState(true);
 	const updateInterval = useRef<any>(null);
-	const [currency, setCurrency] = useState<Currency>({ id: CURRENCY, name: CURRENCY, symbol: CURRENCY });
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
-	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState<string | null>(null);
-	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+
 
 	// Efeitos
 	useEffect(() => {
 		loadTokensForWallet();
-	}, [currency, walletId, tempPrimaryCurrency, navigation]);
+	}, [currency, walletId, navigation]);
 
 	useFocusEffect(
 		React.useCallback(() => {
@@ -71,26 +71,12 @@ const TokensScreen = ({ route }: { route: any }) => {
 	}
 
 	useEffect(() => {
-		const loadInitialCurrency = async () => {
-			const savedCurrency = await loadCurrency();
-			const currency = findCurrencyBySymbol(savedCurrency!)
-			if (!currency) {
-				setCurrency({ id: CURRENCY, name: CURRENCY, symbol: CURRENCY });
-			} else {
-
-				setCurrency(currency);
-			}
-		};
-
-
 		const fetchCurrenciesData = async () => {
 			const data = await fetchCurrencies();
 			if (data) {
 				setCurrencies(data);
 			}
 		};
-
-		loadInitialCurrency();
 		fetchCurrenciesData();
 	}, [navigation]);
 
@@ -104,7 +90,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 				const tokensWithPrice = await Promise.all(
 					allTokens.map(async (token: TokenData) => {
 
-						const price = await fetchTokenPrice(token.id, currency!);
+						const price = await fetchTokenPrice(token.id, { id: currency!, name: currency!, symbol: currency! });
 						const totalAmount = calculateTotalAmount(token.additions);
 						const { percentageChange } = await calculatePercentageChange(token.additions, price);
 
@@ -178,22 +164,8 @@ const TokensScreen = ({ route }: { route: any }) => {
 	};
 
 	const handleTokenPress = (tokenId: string) => {
-		navigation.navigate('TokenDetails', { tokenId, currency: currency?.symbol! });
+		navigation.navigate('TokenDetails', { tokenId });
 	};
-
-	const handleCloseSettingsModal = () => {
-		setSettingsModalVisible(false);
-	};
-
-	const handleConfirmCurrencySelection = async () => {
-		setCurrency(findCurrencyBySymbol(tempPrimaryCurrency!)!);
-		await saveCurrency(tempPrimaryCurrency!); // Salva a moeda primária
-		handleCloseSettingsModal(); // Fecha o modal
-
-		// Recarrega os tokens após a seleção das moedas
-		loadTokensForWallet(); // Chama a função para recarregar os tokens
-	};
-
 
 	const handleDeleteWallet = async (walletId: string) => {
 		Alert.alert(
@@ -249,7 +221,7 @@ const TokensScreen = ({ route }: { route: any }) => {
 							tokenCoin={item.tokenCoin!}
 							currencyPercentageChange={item.percentageChange!}
 							currencyTotalAmount={item.currentValue}
-							currency={currency}
+							currency={{ id: currency!, name: currency!, symbol: currency! }}
 							percentageOfWallet={item.percentageOfWallet}
 						/>
 					)}
@@ -258,8 +230,6 @@ const TokensScreen = ({ route }: { route: any }) => {
 					refreshing={loading}
 				/>
 			)}
-
-
 		</View>
 	);
 };

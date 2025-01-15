@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Alert, Button, FlatList, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import TokenAdditionItem from '../components/TokenAdditionItem';
 import { useTheme } from '../context/ThemeContext';
@@ -9,6 +9,7 @@ import { RootStackParamList } from '../types/navigation';
 import { TokenAddition, TokenData } from '../types/types';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
 import { loadCurrency, loadTokens, saveToken } from '../utils/storage';
+import { CurrencyContext } from '../context/CurrencyContext';
 
 const TokenDetailsScreen = () => {
 	const navigation = useNavigation<import('@react-navigation/native').NavigationProp<RootStackParamList>>();
@@ -16,9 +17,11 @@ const TokenDetailsScreen = () => {
 	const { theme } = useTheme(); // Usando o contexto do tema
 	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
 
+	const currencyContextValues = useContext(CurrencyContext);
+	const currency = currencyContextValues?.currency?.symbol;
 
 	const route = useRoute();
-	const { tokenId, currency } = route.params as { tokenId: string, currency: string };
+	const { tokenId } = route.params as { tokenId: string };
 	const [token, setToken] = useState<TokenData | null>(null);
 	const [modalVisible, setModalVisible] = useState(false);
 	const [redeemAmount, setRedeemAmount] = useState('');
@@ -35,7 +38,7 @@ const TokenDetailsScreen = () => {
 
 
 		// Verifica se os preços atuais estão disponíveis
-		const priceNow = await fetchTokenPrice(tokenId, { id: currency, symbol: currency, name: currency })
+		const priceNow = await fetchTokenPrice(tokenId, { id: currency!, symbol: currency!, name: currency! })
 		if (!ammout || !priceNow) {
 			return { percentageChange: 0 };
 		}
@@ -61,7 +64,7 @@ const TokenDetailsScreen = () => {
 				if (tokenDetails) {
 					const tokenWithPrice = await Promise.all(
 						tokenDetails.additions.map(async (addition: TokenAddition) => {
-							const currentValue = await fetchTokenPrice(tokenDetails.id, { id: currency, name: currency, symbol: currency });
+							const currentValue = await fetchTokenPrice(tokenDetails.id, { id: currency!, name: currency!, symbol: currency! });
 
 							const { percentageChange } = await calculatePercentageChange(addition.amount, addition.priceAtPurchaseCurrency1!, tokenDetails?.tokenCoin?.id!);
 
@@ -152,7 +155,7 @@ const TokenDetailsScreen = () => {
 	};
 
 	const renderAdditionItem = ({ item }: { item: any }) => (
-		<TokenAdditionItem amount={item.amount} timestamp={item.timestamp} percentageChange={item.percentageChange} currentValue={item.currentValue} currency={currency} />
+		<TokenAdditionItem amount={item.amount} timestamp={item.timestamp} percentageChange={item.percentageChange} currentValue={item.currentValue} currency={currency!} />
 	);
 
 	return <View style={styles.container}>

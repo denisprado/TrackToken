@@ -18,13 +18,14 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
 
 	const [wallets, setWallets] = useState<Wallet[]>([]);
-	const currencyContextValues = useContext(CurrencyContext);
 	const [currencies, setCurrencies] = useState<Currency[]>([]);
 	const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 	const [tempPrimaryCurrency, setTempPrimaryCurrency] = useState<string | null>(null);
 	const [walletData, setWalletData] = useState<WalletData>();
 
+	const currencyContextValues = useContext(CurrencyContext);
 	const currency = currencyContextValues?.currency?.symbol;
+
 	const loadWallets = async () => {
 		const loadedWallets = await fetchWallets(); // Carregar carteiras do armazenamento
 		setWallets(loadedWallets);
