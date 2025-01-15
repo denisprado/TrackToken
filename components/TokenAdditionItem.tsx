@@ -25,7 +25,7 @@ const TokenAdditionItem: React.FC<TokenAdditionItemProps> = ({ amount, timestamp
 	return (
 		<View style={styles.itemContainer}>
 			<View style={styles.leftContainer}>
-				<Text style={styles.amount}>{amount}</Text>
+				<Text style={styles.value}>{amount}</Text>
 				<Text style={styles.additionTimestamp}>{new Date(timestamp).toLocaleString()}</Text>
 			</View>
 

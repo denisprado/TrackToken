@@ -3,6 +3,7 @@ import { Coin, TokenAddition, TokenData, Wallet } from "../types/types";
 
 const STORAGE_KEY = "token_data"; // Chave para armazenar os dados dos tokens
 const CURRENCY_KEY = "selected_currency"; // Chave para armazenar a moeda selecionada
+const WALLET_KEY = "selected_wallet"; // Chave para armazenar a moeda selecionada
 export const CURRENCY: string = "usd"; // Lista de moedas suportadas
 
 // Função para salvar um token no armazenamento
@@ -115,27 +116,12 @@ export const saveCurrency = async (currency: string) => {
   }
 };
 
-// Função para carregar a moeda selecionada do armazenamento
-export const loadCurrency = async (): Promise<string | null> => {
-  try {
-    const currency = await AsyncStorage.getItem(CURRENCY_KEY); // Obtém a moeda do armazenamento
-    if (!currency) {
-      await saveCurrency(CURRENCY); // Salva a moeda padrão se não existir
-      const currency = await AsyncStorage.getItem(CURRENCY_KEY);
-      return currency!.replace(/"/g, ""); // Retorna a moeda padrão
-    }
-    return currency!.replace(/"/g, ""); // Retorna a moeda existente
-  } catch (error) {
-    console.error("Error loading currency:", error); // Loga o erro em caso de falha
-    return null; // Retorna null em caso de erro
-  }
-};
-
 // Função para limpar todos os tokens do armazenamento
 export const clearStorage = async () => {
   try {
     await AsyncStorage.removeItem(STORAGE_KEY); // Remove os dados dos tokens
     await AsyncStorage.removeItem(CURRENCY_KEY); // Remove as moedas selecionadas
+    await AsyncStorage.removeItem(WALLET_KEY); // Remove as moedas selecionadas
     console.log("Armazenamento limpo com sucesso."); // Loga a confirmação
   } catch (error) {
     console.error("Erro ao limpar o armazenamento:", error); // Loga o erro em caso de falha
@@ -147,19 +133,19 @@ export const saveWallet = async (wallet: Wallet) => {
   const wallets = await fetchWallets();
   wallets.push(wallet);
   console.log(wallets);
-  await AsyncStorage.setItem("wallets", JSON.stringify(wallets));
+  await AsyncStorage.setItem(WALLET_KEY, JSON.stringify(wallets));
 };
 
 // Função para carregar carteiras do armazenamento
 export const fetchWallets = async (): Promise<Wallet[]> => {
-  const wallets = await AsyncStorage.getItem("wallets");
+  const wallets = await AsyncStorage.getItem(WALLET_KEY);
   return wallets ? JSON.parse(wallets) : [];
 };
 
 // Função para remover uma carteira do armazenamento
 export const removeWallet = async (walletId: string) => {
   try {
-    const existingData = await AsyncStorage.getItem("wallets");
+    const existingData = await AsyncStorage.getItem(WALLET_KEY);
     const existingWallets: Wallet[] = existingData
       ? JSON.parse(existingData)
       : [];
@@ -170,7 +156,7 @@ export const removeWallet = async (walletId: string) => {
     );
 
     // Salva as carteiras atualizadas no armazenamento
-    await AsyncStorage.setItem("wallets", JSON.stringify(updatedWallets));
+    await AsyncStorage.setItem(WALLET_KEY, JSON.stringify(updatedWallets));
 
     // Remove os tokens associados a esta carteira
     await removeTokensByWalletId(walletId);

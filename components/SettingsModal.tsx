@@ -38,11 +38,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 		>
 			<View style={styles.centeredView}>
 				<View style={[styles.modalView, { minWidth: '70%' }]}>
-					<Text style={styles.modalTitle}>Settings</Text>
+					<View style={styles.header}>
+
+						<Text style={styles.modalTitle}>Settings</Text>
+						<TouchableOpacity style={styles.modalClose} onPress={onClose}>
+							<Feather name="x" size={24} color={styles.iconButtonText.color} />
+						</TouchableOpacity>
+					</View>
 					<ScrollView>
 						<Text style={styles.label}>Select currency</Text>
 						<TouchableOpacity onPress={() => { }}>
-							<Text style={styles.selectText}>{selectedCurrency}</Text>
+							<Text style={styles.inputText}>{selectedCurrency}</Text>
 						</TouchableOpacity>
 						<Picker
 							selectedValue={currency.id ? currency.id : selectedCurrency!}
@@ -56,9 +62,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 						<TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
 							<Text style={styles.confirmButtonText}>Confirm</Text>
 						</TouchableOpacity>
-						<TouchableOpacity style={styles.modalClose} onPress={onClose}>
-							<Feather name="x" size={20} color={styles.iconButtonText.color} />
-						</TouchableOpacity>
+
 					</ScrollView>
 				</View>
 			</View>

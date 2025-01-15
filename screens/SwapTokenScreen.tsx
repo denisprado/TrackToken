@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
 	Alert,
 	Button,
@@ -16,10 +16,11 @@ import {
 import { RootStackParamList } from '../types/navigation';
 import { Coin, Currency } from '../types/types';
 import { fetchCoins, fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { loadCurrency, saveToken } from '../utils/storage';
+import { saveToken } from '../utils/storage';
 
 import { useTheme } from '../context/ThemeContext';
 import useThemedStyles from '../hooks/useThemedStyles';
+import { CurrencyContext } from '../context/CurrencyContext';
 
 const SwapTokenScreen = () => {
 	const { theme } = useTheme(); // Usando o contexto do tema
@@ -120,7 +121,6 @@ const SwapTokenScreen = () => {
 					text: 'Swap',
 					onPress: async () => {
 						setIsCalculating(true);
-						const currency = await loadCurrency();
 						const parsedToAmount = parseFloat(toAmount);
 						try {
 
@@ -130,8 +130,9 @@ const SwapTokenScreen = () => {
 								return currency
 							}
 
-							const currencySaved = await loadCurrency()
-							const currency = await findCurrencyBySymbol(currencySaved!)
+							const currencyContextValues = useContext(CurrencyContext);
+							const currency = currencyContextValues?.currency;
+
 							const toPrice1 = await fetchTokenPrice(toToken.id, currency!);
 							// Subtract from fromToken
 							await saveToken({

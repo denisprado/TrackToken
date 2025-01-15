@@ -2,15 +2,14 @@ import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
-import SettingsModal from '../components/SettingsModal';
 import TokenItem from '../components/TokenItem';
 import { Currency, TokenAddition, TokenData } from '../types/types';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { CURRENCY, loadCurrency, loadTokens, removeWallet, saveCurrency } from '../utils/storage';
+import { loadTokens, removeWallet } from '../utils/storage';
 // Definições de tipos
+import { CurrencyContext } from '../context/CurrencyContext';
 import { useTheme } from '../context/ThemeContext';
 import useThemedStyles from '../hooks/useThemedStyles';
-import { CurrencyContext } from '../context/CurrencyContext';
 
 const TokensScreen = ({ route }: { route: any }) => {
 	const { theme } = useTheme(); // Usando o contexto do tema
@@ -64,11 +63,6 @@ const TokensScreen = ({ route }: { route: any }) => {
 
 		return unsubscribe; // Limpa o listener ao desmontar
 	}, [navigation]);
-
-	const findCurrencyBySymbol = (symbolToFind: string) => {
-		const currencyToFind = currencies.find(({ symbol }) => symbol === symbolToFind.toLowerCase())
-		return currencyToFind
-	}
 
 	useEffect(() => {
 		const fetchCurrenciesData = async () => {
@@ -193,22 +187,20 @@ const TokensScreen = ({ route }: { route: any }) => {
 		<View style={styles.container}>
 			<View style={styles.header}>
 				<Text style={styles.title}>{walletName}</Text>
+				<TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteWallet(walletId)}>
+					<Feather name="trash" size={24} color={styles.dangerButton.color} />
+				</TouchableOpacity>
 
 				<TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AddToken', { walletId: walletId })}>
 					<Feather name="plus-circle" size={24} color={theme.colors.text} />
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.iconButton} onPress={() => loadTokensForWallet()}>
-					<Feather name="refresh-ccw" size={24} color={theme.colors.text} />
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.iconButton} onPress={() => handleDeleteWallet(walletId)}>
-					<Feather name="trash" size={24} color={theme.colors.text} />
+					<Text style={styles.createButtonText} >Add token</Text>
 				</TouchableOpacity>
 
 			</View>
 
 			{loading ? (
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={theme.colors.accent} />
+					<ActivityIndicator size="large" color={theme.colors.accent[500]} />
 				</View>
 			) : (
 				<FlatList

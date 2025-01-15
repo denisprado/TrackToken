@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
 	Alert,
 	Button,
@@ -18,9 +18,10 @@ import {
 } from 'react-native';
 import { Coin, Currency } from '../types/types';
 import { fetchCoins, fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { loadCurrency, saveToken } from '../utils/storage';
+import { saveToken } from '../utils/storage';
 import { useTheme } from '../context/ThemeContext';
 import useThemedStyles from '../hooks/useThemedStyles';
+import { CurrencyContext } from '../context/CurrencyContext';
 
 const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) => {
 	const { theme } = useTheme(); // Usando o contexto do tema
@@ -35,7 +36,6 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 	const [filteredTokens, setFilteredTokens] = useState<Coin[]>([]);
 	const [currentTokenValue, setCurrentTokenValue] = useState<number>(0);
 	const [totalValueReceived, setTotalValueReceived] = useState<number>(0);
-	const [currency, setCurrency] = useState<Currency | null>(null);
 	const [isEditing, setIsEditing] = useState<boolean>(false);
 	const routes = route.params; // Obter o ID da carteira
 	const walletId = routes && routes.walletId
@@ -52,16 +52,9 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 		fetchCoinsEffect();
 	}, []);
 
-	useEffect(() => {
-		const fetchCurrenciesAddToken = async () => {
-			const currency1saved = await loadCurrency();
-			const currencies = await fetchCurrencies()
-			const currency1Value = currencies!.find(({ name }) => name === currency1saved)
-			setCurrency(currency1Value!);
-		};
+	const currencyContextValues = useContext(CurrencyContext);
+	const currency = currencyContextValues?.currency;
 
-		fetchCurrenciesAddToken();
-	}, []);
 
 	useEffect(() => {
 		if (searchText) {
@@ -181,11 +174,11 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 
 	return (
 		<KeyboardAvoidingView
-			style={{ flex: 1 }}
+			style={{ flex: 1, backgroundColor: theme.colors.background }}
 			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 			keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
 		>
-			<ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: theme.colors.background }}>
+			<ScrollView contentContainerStyle={{ backgroundColor: theme.colors.background, }}>
 				<View style={styles.container}>
 					<Text style={styles.title}>Add New Token</Text>
 
@@ -209,8 +202,8 @@ const AddTokenScreen = ({ route }: { route: { params: { walletId: string } } }) 
 							value={tokenAmount}
 							onChangeText={handleTokenAmountChange}
 							placeholder="Enter amount"
-							placeholderTextColor={theme.colors.secondaryText}
-							selectionColor={theme.colors.secondaryText}
+							placeholderTextColor={theme.colors.inputText}
+							selectionColor={theme.colors.inputText}
 						/>
 					</View>
 

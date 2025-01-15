@@ -8,7 +8,7 @@ import useThemedStyles from '../hooks/useThemedStyles';
 import { RootStackParamList } from '../types/navigation';
 import { TokenAddition, TokenData } from '../types/types';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { loadCurrency, loadTokens, saveToken } from '../utils/storage';
+import { loadTokens, saveToken } from '../utils/storage';
 import { CurrencyContext } from '../context/CurrencyContext';
 
 const TokenDetailsScreen = () => {
@@ -123,10 +123,10 @@ const TokenDetailsScreen = () => {
 			}
 
 
+			const currencyContextValues = useContext(CurrencyContext);
+			const currency = currencyContextValues?.currency?.symbol;
 
-			const currencySaved = await loadCurrency()
-			const currency = await findCurrencyBySymbol(currencySaved!)
-			const currentPrice = await fetchTokenPrice(tokenId, currency!);
+			const currentPrice = await fetchTokenPrice(tokenId, { id: currency!, name: currency!, symbol: currency! });
 
 			await saveToken({
 				id: tokenId,

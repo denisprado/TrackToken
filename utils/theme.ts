@@ -3,71 +3,50 @@ const primitiveTokens = {
   colors: {
     black: "#000000",
     white: "#FFFFFF",
-    gray100: "#F8F9FA",
-    gray200: "#E9ECEF",
-    gray300: "#DEE2E6",
-    gray400: "#CED4DA",
-    gray500: "#ADB5BD",
-    gray600: "#6C757D",
-    gray700: "#495057",
-    gray800: "#343A40",
-    gray900: "#212529",
-    blue: "#007BFF",
-    green: "#28A745",
-    red: "#DC3545",
-  },
-  fontFamilies: {
-    monospace: "monospace",
-    sans: "Helvetica",
-  },
-  fontSizes: {
-    small: 12,
-    medium: 14,
-    large: 16,
-    xlarge: 24,
-  },
-  spacing: {
-    small: 5,
-    medium: 10,
-    large: 15,
-    xlarge: 20,
-  },
-  borderRadius: {
-    small: 5,
-    medium: 10,
-    large: 15,
-  },
-  shadows: {
-    small: {
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      elevation: 5,
+    gray: {
+      100: "#F8F9FA",
+      200: "#E9ECEF",
+      300: "#DEE2E6",
+      400: "#CED4DA",
+      500: "#ADB5BD",
+      600: "#6C757D",
+      700: "#495057",
+      800: "#343A40",
+      900: "#212529",
     },
-  },
-};
-
-// Tokens Primitivos para Tema Escuro
-const darkPrimitiveTokens = {
-  colors: {
-    black: "#FFFFFF",
-    white: "#000000",
-    gray100: "#212529",
-    gray200: "#343A40",
-    gray300: "#495057",
-    gray400: "#6C757D",
-    gray500: "#ADB5BD",
-    gray600: "#CED4DA",
-    gray700: "#DEE2E6",
-    gray800: "#E9ECEF",
-    gray900: "#F8F9FA",
-    blue: "#007BFF",
-    green: "#28A745",
-    red: "#DC3545",
+    blue: {
+      100: "#80C7FF", // Ligeiramente claro
+      200: "#66B2FF",
+      300: "#4D9EFF",
+      400: "#3399FF",
+      500: "#007BFF", // Cor primária
+      600: "#006FDB",
+      700: "#0058A8",
+      800: "#004180",
+      900: "#002A59",
+    },
+    green: {
+      100: "#A5D8A5", // Ligeiramente claro
+      200: "#7CC77C",
+      300: "#58B358",
+      400: "#3F9F3F",
+      500: "#28A745", // Cor de destaque
+      600: "#228636",
+      700: "#1A6930",
+      800: "#124C29",
+      900: "#0C3521",
+    },
+    red: {
+      100: "#FFB3B3", // Ligeiramente claro
+      200: "#FF9999",
+      300: "#FF7F7F",
+      400: "#FF6666",
+      500: "#DC3545", // Cor secundária
+      600: "#B02A3D",
+      700: "#8B1F33",
+      800: "#661524",
+      900: "#4A0F1B",
+    },
   },
   fontFamilies: {
     monospace: "monospace",
@@ -107,15 +86,16 @@ const darkPrimitiveTokens = {
 // Tokens Semânticos
 const semanticTokens = {
   colors: {
-    text: primitiveTokens.colors.gray900,
-    secondaryText: primitiveTokens.colors.gray600,
-    primary: primitiveTokens.colors.blue,
-    secondary: primitiveTokens.colors.red,
-    accent: primitiveTokens.colors.green,
-    inputBackground: primitiveTokens.colors.gray100,
-    border: primitiveTokens.colors.gray400,
-    error: primitiveTokens.colors.red,
-    background: primitiveTokens.colors.gray200,
+    text: primitiveTokens.colors.gray[900],
+    secondaryText: primitiveTokens.colors.gray[600],
+    primary: primitiveTokens.colors.blue[500],
+    secondary: primitiveTokens.colors.red[500],
+    accent: primitiveTokens.colors.green[400],
+    inputBackground: primitiveTokens.colors.gray[400],
+    inputText: primitiveTokens.colors.gray[200],
+    border: primitiveTokens.colors.gray[400],
+    error: primitiveTokens.colors.red[500],
+    background: primitiveTokens.colors.gray[200],
     cardBackground: primitiveTokens.colors.white,
   },
   fontSizes: {
@@ -143,36 +123,37 @@ const semanticTokens = {
 // Tokens Semânticos para Tema Escuro
 const darkSemanticTokens = {
   colors: {
-    text: darkPrimitiveTokens.colors.gray100,
-    secondaryText: darkPrimitiveTokens.colors.gray400,
-    primary: darkPrimitiveTokens.colors.blue,
-    secondary: darkPrimitiveTokens.colors.red,
-    accent: darkPrimitiveTokens.colors.green,
-    inputBackground: darkPrimitiveTokens.colors.gray800,
-    border: darkPrimitiveTokens.colors.gray600,
-    error: darkPrimitiveTokens.colors.red,
-    background: darkPrimitiveTokens.colors.gray900,
-    cardBackground: darkPrimitiveTokens.colors.gray700,
+    text: primitiveTokens.colors.gray[100],
+    secondaryText: primitiveTokens.colors.gray[500],
+    primary: primitiveTokens.colors.blue[500],
+    secondary: primitiveTokens.colors.red[200],
+    accent: primitiveTokens.colors.green[300],
+    inputBackground: primitiveTokens.colors.gray[400],
+    inputText: primitiveTokens.colors.gray[800],
+    border: primitiveTokens.colors.gray[800],
+    error: primitiveTokens.colors.red[300],
+    background: primitiveTokens.colors.gray[800],
+    cardBackground: primitiveTokens.colors.gray[700],
   },
   fontSizes: {
-    small: darkPrimitiveTokens.fontSizes.small,
-    medium: darkPrimitiveTokens.fontSizes.medium,
-    large: darkPrimitiveTokens.fontSizes.large,
-    xlarge: darkPrimitiveTokens.fontSizes.xlarge,
+    small: primitiveTokens.fontSizes.small,
+    medium: primitiveTokens.fontSizes.medium,
+    large: primitiveTokens.fontSizes.large,
+    xlarge: primitiveTokens.fontSizes.xlarge,
   },
   spacing: {
-    small: darkPrimitiveTokens.spacing.small,
-    medium: darkPrimitiveTokens.spacing.medium,
-    large: darkPrimitiveTokens.spacing.large,
-    xlarge: darkPrimitiveTokens.spacing.xlarge,
+    small: primitiveTokens.spacing.small,
+    medium: primitiveTokens.spacing.medium,
+    large: primitiveTokens.spacing.large,
+    xlarge: primitiveTokens.spacing.xlarge,
   },
   borderRadius: {
-    small: darkPrimitiveTokens.borderRadius.small,
-    medium: darkPrimitiveTokens.borderRadius.medium,
-    large: darkPrimitiveTokens.borderRadius.large,
+    small: primitiveTokens.borderRadius.small,
+    medium: primitiveTokens.borderRadius.medium,
+    large: primitiveTokens.borderRadius.large,
   },
   shadows: {
-    small: darkPrimitiveTokens.shadows.small,
+    small: primitiveTokens.shadows.small,
   },
 };
 
@@ -183,7 +164,7 @@ export const theme = {
 };
 
 export const darkTheme = {
-  ...darkPrimitiveTokens,
+  ...primitiveTokens,
   ...darkSemanticTokens,
 };
 

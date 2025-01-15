@@ -9,6 +9,9 @@ const useThemedStyles = () => {
       flex: 1,
       padding: theme.spacing.large,
       backgroundColor: theme.colors.background,
+      display: "flex",
+      justifyContent: "flex-start",
+      gap: theme.spacing.medium,
     },
     header: {
       flexDirection: "row",
@@ -25,16 +28,19 @@ const useThemedStyles = () => {
     iconButton: {
       display: "flex",
       flexDirection: "row",
-      gap: theme.spacing.medium,
+      gap: theme.spacing.small,
       padding: theme.spacing.small,
     },
     iconButtonText: {
       color: theme.colors.secondaryText,
     },
 
+    dangerButton: { color: theme.colors.error },
     tokenImagesContainer: {
       flexDirection: "row",
       marginTop: theme.spacing.small,
+      flexWrap: "wrap",
+      gap: theme.spacing.small,
     },
     tokenImage: {
       width: theme.spacing.xlarge,
@@ -103,8 +109,8 @@ const useThemedStyles = () => {
       marginBottom: theme.spacing.small,
     },
     input: {
-      height: 40,
       backgroundColor: theme.colors.inputBackground,
+      color: theme.colors.inputText,
       borderColor: theme.colors.border,
       borderWidth: 1,
       padding: theme.spacing.medium,
@@ -137,13 +143,15 @@ const useThemedStyles = () => {
     },
     selectText: {
       fontSize: theme.fontSizes.large,
-      color: theme.colors.text,
+      color: theme.colors.inputText,
       padding: theme.spacing.medium,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: theme.spacing.small,
       textAlign: "center",
       marginBottom: theme.spacing.medium,
+    },
+
+    inputText: {
+      color: theme.colors.inputText,
+      fontSize: theme.fontSizes.medium,
     },
 
     /** Tokens Details Screen */
@@ -191,7 +199,7 @@ const useThemedStyles = () => {
       flexDirection: "row",
       alignItems: "center",
       borderBottomWidth: 1,
-      borderBottomColor: "#eee",
+      borderBottomColor: theme.colors.border,
       marginBottom: theme.spacing.medium,
     },
     searchIcon: {
@@ -229,10 +237,9 @@ const useThemedStyles = () => {
     itemContainer: {
       paddingVertical: theme.spacing.medium,
       paddingLeft: theme.spacing.medium,
-      marginHorizontal: theme.spacing.large,
+      marginHorizontal: theme.spacing.small,
       marginVertical: theme.spacing.small,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.border,
+
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
@@ -278,7 +285,7 @@ const useThemedStyles = () => {
       fontFamily: theme.fontFamilies.monospace,
     },
     currencyPercentageChange: {
-      fontSize: theme.fontSizes.small,
+      fontSize: theme.fontSizes.medium,
       marginLeft: theme.spacing.small,
       fontFamily: theme.fontFamilies.monospace,
     },
@@ -305,14 +312,14 @@ const useThemedStyles = () => {
       display: "flex",
       flexDirection: "row",
       width: "100%",
-      height: 8,
-      backgroundColor: theme.colors.border,
+      height: theme.spacing.medium,
+      backgroundColor: theme.colors.background,
       borderRadius: 4,
       marginTop: theme.spacing.small,
     },
     percentageBar: {
       height: "100%",
-      backgroundColor: "#fff", // Cor da barra, pode ser ajustada
+      backgroundColor: theme.colors.primary, // Cor da barra, pode ser ajustada
       borderRadius: 4,
     },
 

@@ -1,20 +1,19 @@
 import { Feather } from '@expo/vector-icons'; // Importando Feather para ícones
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useContext, useEffect, useState } from 'react';
-import { Alert, FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import SettingsModal from '../components/SettingsModal';
 import { Currency, Wallet, WalletData } from '../types/types';
 import { fetchCurrencies, fetchTokenPrice } from '../utils/api';
-import { clearStorage, CURRENCY, fetchWallets, loadCurrency, loadTokensByWalletId, saveCurrency } from '../utils/storage'; // Função para buscar carteiras
+import { CURRENCY, fetchWallets, loadTokensByWalletId } from '../utils/storage'; // Função para buscar carteiras
 
-import { useTheme } from '../context/ThemeContext';
-import useThemedStyles from '../hooks/useThemedStyles';
 import { CurrencyContext } from '../context/CurrencyContext';
+import useThemedStyles from '../hooks/useThemedStyles';
 
 
 const WalletsScreen = ({ navigation }: { navigation: any }) => {
 
-	const { toggleTheme } = useTheme(); // Usando o contexto do tema
+
 	const styles = useThemedStyles(); // Obtendo estilos baseados no tema
 
 	const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -90,11 +89,7 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 		handleCloseSettingsModal();
 	};
 
-	const handleClearStorage = async () => {
-		await clearStorage(); // Chama a função para limpar o armazenamento
-		Alert.alert("Sucesso", "Todos os dados foram limpos."); // Exibe um alerta de sucesso
-		loadWallets(); // Recarrega os tokens após a limpeza
-	};
+
 
 	const walletAmount = async (walletId: string) => {
 		const tokens = await loadTokensByWalletId(walletId);
@@ -169,18 +164,11 @@ const WalletsScreen = ({ navigation }: { navigation: any }) => {
 	return (
 		<View style={styles.container}>
 			<View style={styles.header}>
-				<Text style={styles.title}>Carteiras</Text>
-				<TouchableOpacity style={styles.iconButton} onPress={handleOpenSettingsModal}>
-					<Feather name='settings' size={24} color={styles.iconButtonText.color} />
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.iconButton} onPress={toggleTheme}>
-					<Feather name='moon' size={24} color={styles.iconButtonText.color} />
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.iconButton} onPress={handleClearStorage}>
-					<Feather name="trash-2" size={24} color={styles.iconButtonText.color} />
-				</TouchableOpacity>
+
+
 				<TouchableOpacity style={styles.iconButton} onPress={handleCreateWallet}>
 					<Feather name="plus-circle" size={24} color={styles.iconButtonText.color} />
+					<Text style={styles.createButtonText}>Add Wallet</Text>
 				</TouchableOpacity>
 			</View>
 
